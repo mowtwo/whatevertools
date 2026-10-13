@@ -4,6 +4,7 @@
   "installCommand": "cd .. && ELECTRON_SKIP_BINARY_DOWNLOAD=1 pnpm install --frozen-lockfile --filter whatevertools-website...",
   "buildCommand": "pnpm build",
   "outputDirectory": ".vitepress/dist",
+  "cleanUrls": true,
   "ignoreCommand": "git diff --quiet ${VERCEL_GIT_PREVIOUS_SHA:-HEAD^} HEAD -- . ../docs ../packages/cli/skills ../packages/vite/README.md ../packages/web-host/README.md ../packages/sharp-canvas/README.md ../pnpm-lock.yaml",
   "headers": [
     {
