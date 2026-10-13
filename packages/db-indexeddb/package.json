@@ -1,8 +1,9 @@
 {
   "name": "@whatevertools/db-indexeddb",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "whatevertools storage adapter: IndexedDB (browsers)",
   "license": "MIT",
+  "homepage": "https://whatevertools.mowtwo.com",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mowtwo/whatevertools.git",

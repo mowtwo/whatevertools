@@ -1,8 +1,9 @@
 {
   "name": "@whatevertools/sync-http",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "whatevertools sync adapter: replicate through a small HTTP protocol; includes a reference server",
   "license": "MIT",
+  "homepage": "https://whatevertools.mowtwo.com",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mowtwo/whatevertools.git",

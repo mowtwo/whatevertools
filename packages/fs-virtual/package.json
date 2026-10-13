@@ -1,8 +1,9 @@
 {
   "name": "@whatevertools/fs-virtual",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "In-memory POSIX file system with optional IndexedDB persistence; implements the whatevertools FsCapability (sync + async)",
   "license": "MIT",
+  "homepage": "https://whatevertools.mowtwo.com",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mowtwo/whatevertools.git",

@@ -1,8 +1,9 @@
 {
   "name": "@whatevertools/upx",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Read and write uTools plugin packages (.upx) and Electron asar archives in Node and browsers; detects encrypted .upxs",
   "license": "MIT",
+  "homepage": "https://whatevertools.mowtwo.com",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mowtwo/whatevertools.git",

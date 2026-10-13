@@ -1,8 +1,9 @@
 {
   "name": "@whatevertools/web",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Browser runtime for whatevertools: runs plugins as static web pages with a virtual file system, IndexedDB storage and Node/Electron shims",
   "license": "MIT",
+  "homepage": "https://whatevertools.mowtwo.com",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mowtwo/whatevertools.git",

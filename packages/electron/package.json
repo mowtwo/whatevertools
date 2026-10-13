@@ -1,8 +1,9 @@
 {
   "name": "@whatevertools/electron",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Electron runtime for whatevertools: main-process host, services and the preload bridge that injects the plugin API",
   "license": "MIT",
+  "homepage": "https://whatevertools.mowtwo.com",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mowtwo/whatevertools.git",

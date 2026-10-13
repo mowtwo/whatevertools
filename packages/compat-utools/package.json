@@ -1,8 +1,9 @@
 {
   "name": "@whatevertools/compat-utools",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "uTools compatibility adapter: maps the whatevertools native API to the window.utools shape",
   "license": "MIT",
+  "homepage": "https://whatevertools.mowtwo.com",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mowtwo/whatevertools.git",

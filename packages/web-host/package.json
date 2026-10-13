@@ -1,8 +1,9 @@
 {
   "name": "@whatevertools/web-host",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Install and run uTools-style plugin packages (.upx / .asar / .zip / folders) on any website at runtime: IndexedDB storage, a Service Worker that serves each plugin, one iframe per plugin, install policy",
   "license": "MIT",
+  "homepage": "https://whatevertools.mowtwo.com",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mowtwo/whatevertools.git",

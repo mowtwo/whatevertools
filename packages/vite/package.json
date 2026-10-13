@@ -1,8 +1,9 @@
 {
   "name": "@whatevertools/vite",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Vite plugin for whatevertools: write whatevertools.json, pack the build for uTools / Electron / web, and emulate the plugin runtime in vite dev",
   "license": "MIT",
+  "homepage": "https://whatevertools.mowtwo.com",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mowtwo/whatevertools.git",
