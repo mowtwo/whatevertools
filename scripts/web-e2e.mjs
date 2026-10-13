@@ -47,7 +47,7 @@ const expect = {
   'preload 在浏览器里执行（fs 垫片）': 'function/true',
   '读插件自带文件': 'index.html',
   'dbStorage': '{"a":1}',
-  'supports 反映实际': 'false/false/emulated',
+  'supports 反映实际': 'partial/false/emulated',
 }
 let failed = 0
 for (const [name, expr] of Object.entries(checks)) {

@@ -1,5 +1,5 @@
 // 浏览器平台的能力实现
-import { findApi, type Capabilities, type DbCapability, type DisplayInfo, type DocDb, type FeatureStore, type ImageInput, type PermissionManager, type Scheduler, type WindowHandle } from '@whatevertools/core'
+import { findApi, type Capabilities, type DialogCapability, type ShellCapability, type DbCapability, type DisplayInfo, type DocDb, type FeatureStore, type ImageInput, type PermissionManager, type Scheduler, type WindowHandle } from '@whatevertools/core'
 import type { VirtualFs } from '@whatevertools/fs-virtual'
 import { imageSize } from '@whatevertools/shim-electron'
 import { fromBase64 } from '@whatevertools/api'
@@ -21,6 +21,12 @@ export interface WebCapsOptions {
   preloads: Record<string, string>
   sharp?: (...a: unknown[]) => unknown
   ai?: Capabilities['ai']
+  /** 文件对话框（默认由 @whatevertools/web-files 提供） */
+  dialog?: DialogCapability
+  /** shell 的补充实现（openPath / showItemInFolder） */
+  shell?: Partial<ShellCapability>
+  /** getPath('downloads') 返回的目录 */
+  downloadsDir?: string
 }
 
 const IPC = '__whatevertoolsIpc'
@@ -120,7 +126,7 @@ export function createWebCaps(o: WebCapsOptions): Capabilities & { emit(name: st
       os: detectOs(),
       dataPathSync: () => '/data',
       tempPathSync: () => '/temp',
-      getPathSync: (n: string) => (n === 'home' ? '/home' : n === 'temp' ? '/tmp' : `/home/${n}`),
+      getPathSync: (n: string) => (n === 'home' ? '/home' : n === 'temp' ? '/tmp' : n === 'downloads' && o.downloadsDir ? o.downloadsDir : `/home/${n}`),
       isDarkSync: () => matchMedia('(prefers-color-scheme: dark)').matches,
       deviceIdSync: () => {
         const k = `whatevertools:${o.pluginId}:device`
@@ -181,7 +187,8 @@ export function createWebCaps(o: WebCapsOptions): Capabilities & { emit(name: st
       },
     },
 
-    shell: { openExternal: async (u: string) => void window.open(u, '_blank', 'noopener') },
+    shell: { openExternal: async (u: string) => void window.open(u, '_blank', 'noopener'), ...o.shell },
+    dialog: o.dialog,
 
     screen: {
       getAllDisplaysSync: () => [display()],

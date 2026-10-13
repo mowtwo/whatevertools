@@ -236,6 +236,8 @@ export function createElectronCaps(ctx: BridgeContext, perms: PermCache, hooks?:
     dialog: {
       showOpenDialogSync: (o) => sync('dialog.open', o),
       showSaveDialogSync: (o) => sync('dialog.save', o),
+      showOpenDialog: (o) => call('dialog.open', o),
+      showSaveDialog: (o) => call('dialog.save', o),
     },
 
     notification: { show: (body, o) => void sync('system.notify', body, o?.clickFeatureCode) },

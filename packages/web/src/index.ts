@@ -6,6 +6,7 @@ import { VirtualFs, indexedDbPersist } from '@whatevertools/fs-virtual'
 import { createNodeModules, createProcess, Buffer } from '@whatevertools/shim-node'
 import { createElectronModule } from '@whatevertools/shim-electron'
 import { createWebCaps } from './caps'
+import { createWebFiles } from '@whatevertools/web-files'
 import { createBridgeCaps } from '@whatevertools/bridge'
 import type { FsCapability } from '@whatevertools/core'
 
@@ -26,8 +27,16 @@ export interface WebBootConfig {
   preloads?: Record<string, string>
   /** 启动时进入的功能 code（默认 URL 参数 feature，再默认第一个有功能指令的功能） */
   startFeature?: string
-  /** 可选的 wasm 版 sharp */
+  /** 现成的 sharp 函数（比如 wasm 版）；优先于 createSharp */
   sharp?: (...a: unknown[]) => unknown
+  /** 用插件的虚拟文件系统创建 sharp（full 入口默认用 @whatevertools/sharp-canvas） */
+  createSharp?: (io: { readFile(path: string): Promise<Uint8Array>; writeFile(path: string, data: Uint8Array): Promise<void>; Buffer: { from(u8: Uint8Array): Uint8Array } }) => (...a: unknown[]) => unknown
+  /**
+   * 文件对话框和下载（@whatevertools/web-files）。false 关闭。
+   * openDialog：同步的 showOpenDialog 在浏览器里只能异步选文件，选完怎么交给插件——
+   *   'enter'（默认）当作一次 files 进入（onPluginEnter 收到 type: 'files'、from: 'dialog'）；'ignore' 丢弃
+   */
+  fileDialogs?: false | { openDialog?: 'enter' | 'ignore' }
   /** 用户信息、AI、付费、设备 id 等提供者（调用经过 provider:<名字>.<方法> hook） */
   providers?: Providers
   /** 数据同步适配器（如 @whatevertools/sync-http） */
@@ -93,7 +102,12 @@ export async function boot(cfg: WebBootConfig) {
   const hooks = new HookRegistry()
   cfg.hooks?.(hooks)
 
-  const vfs = new VirtualFs({ persist: indexedDbPersist(`whatevertools-fs:${manifest.id}`), dirs: ['/data', '/temp', '/home', '/tmp', '/plugin', '/drop'] })
+  const vfs = new VirtualFs({
+    persist: indexedDbPersist(`whatevertools-fs:${manifest.id}`),
+    dirs: ['/data', '/temp', '/home', '/tmp', '/plugin', '/drop'],
+    // 插件自带文件每次从网络挂载；拖入、选中、待下载的文件只在本次页面有效
+    ephemeral: ['/plugin', '/drop', '/picked', '/downloads', '/tmp'],
+  })
   await vfs.load()
   // 插件自带文件：挂到 /plugin，小文件先下载好，保证同步读取可用
   const prefetch: Promise<unknown>[] = []
@@ -107,8 +121,8 @@ export async function boot(cfg: WebBootConfig) {
   // 权限：core 的权限管理器 + localStorage 存储 + 同步 confirm 问询
   const store = new LocalStorageHostStore(`whatevertools:${manifest.id}:`)
   const permissions = new PermissionManager({
-    // 浏览器端的文件系统是虚拟的沙盒：读写默认放行
-    policy: { ...cfg.policy, defaults: { 'fs.read': 'grant', 'fs.write': 'grant', ...cfg.policy?.defaults } },
+    // 浏览器端的文件系统是虚拟的沙盒：读写默认放行；sharp 是页面内的纯计算；文件对话框本身就是用户的选择
+    policy: { ...cfg.policy, defaults: { 'fs.read': 'grant', 'fs.write': 'grant', 'image.sharp': 'grant', dialog: 'grant', ...cfg.policy?.defaults } },
     store,
     hooks,
     prompter: cfg.prompter ?? confirmPrompter,
@@ -124,6 +138,16 @@ export async function boot(cfg: WebBootConfig) {
   ])
   // 定时任务：触发时调用插件的回调（页面开着才有效）
   let capsRef: ReturnType<typeof createWebCaps> | null = null
+  // 最近一次进入的功能：同步打开对话框的选择结果作为这个功能的 files 进入
+  let lastEnterCode = ''
+  const webFiles = cfg.fileDialogs === false ? null : createWebFiles({
+    fs: vfs,
+    onDeferredPick: cfg.fileDialogs?.openDialog === 'ignore' ? undefined : (paths) => {
+      if (!lastEnterCode) return
+      const payload = paths.map((p) => ({ path: p, name: p.slice(p.lastIndexOf('/') + 1), isFile: !!vfs.statSync(p)?.isFile, isDirectory: !!vfs.statSync(p)?.isDirectory }))
+      capsRef?.emit('enter', { code: lastEnterCode, type: 'files', payload, from: 'dialog' })
+    },
+  })
   const scheduler = new Scheduler({ store, hooks, run: async (_pid, code) => void (await capsRef!.request('schedule.trigger', { code })) })
   if (kind === 'main') scheduler.load(manifest.id)
   const caps = createWebCaps({
@@ -131,7 +155,12 @@ export async function boot(cfg: WebBootConfig) {
     scheduler, features: new FeatureStore(store), staticFeatureCodes: manifest.features.map((f) => f.code),
     permissions,
     preloads: cfg.preloads ?? {},
-    sharp: providers.image?.sharp ? call('image', 'sharp', [], () => undefined) : cfg.sharp,
+    dialog: webFiles?.dialog,
+    shell: webFiles?.shell,
+    downloadsDir: webFiles?.downloadsDir,
+    sharp: providers.image?.sharp
+      ? call('image', 'sharp', [], () => undefined)
+      : cfg.sharp ?? cfg.createSharp?.({ readFile: (p) => vfs.readFile(p), writeFile: (p, d) => vfs.writeFile(p, d), Buffer: Buffer as unknown as { from(u8: Uint8Array): Uint8Array } }),
     ai: providers.ai ? {
       models: () => Promise.resolve(call('ai', 'models', [], () => [])),
       complete: (req, io) => call('ai', 'complete', [req, io], () => Promise.reject(new Error('[whatevertools] 没有配置 AI 模型'))),
@@ -139,7 +168,7 @@ export async function boot(cfg: WebBootConfig) {
   })
   if (cfg.bridge) {
     const b = createBridgeCaps({ ...cfg.bridge, plugin: manifest.id })
-    const virtual = (p: string) => /^\/(plugin|data|temp|drop|tmp)(\/|$)/.test(String(p))
+    const virtual = (p: string) => /^\/(plugin|data|temp|drop|tmp|picked|downloads)(\/|$)/.test(String(p))
     const vfsCap = caps.fs!
     // 组合文件系统：沙盒目录走虚拟文件系统，其他路径交给 bridge
     caps.fs = new Proxy(vfsCap, {
@@ -165,6 +194,11 @@ export async function boot(cfg: WebBootConfig) {
     caps.db!.syncStateSync = () => replicator!.state
   }
   capsRef = caps
+  const emit = caps.emit.bind(caps)
+  caps.emit = (name: string, ...args: unknown[]) => {
+    if (name === 'enter') lastEnterCode = (args[0] as { code?: string })?.code ?? lastEnterCode
+    emit(name, ...args)
+  }
   const mock = layers.find((c) => c.layer.identityMock)?.layer.identityMock
   const idOpts = { ...(cfg.identity ?? {}) }
   if (!idOpts.mock?.platform && mock) idOpts.mock = { ...idOpts.mock, platform: mock.platform }

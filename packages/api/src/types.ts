@@ -211,6 +211,9 @@ export interface WhateverToolsApi {
   dialog: {
     open(options?: Record<string, unknown>): string[] | undefined
     save(options?: Record<string, unknown>): string | undefined
+    /** 异步版本：所有平台都能用（web 上同步版做不到真正的文件选择） */
+    openAsync(options?: Record<string, unknown>): Promise<string[] | undefined>
+    saveAsync(options?: Record<string, unknown>): Promise<string | undefined>
   }
   shell: {
     openPath(path: string): Promise<string>

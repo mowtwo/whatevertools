@@ -1,0 +1,37 @@
+{
+  "name": "@whatevertools/upx",
+  "version": "0.1.1",
+  "description": "Read and write uTools plugin packages (.upx) and Electron asar archives in Node and browsers; detects encrypted .upxs",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mowtwo/whatevertools.git",
+    "directory": "packages/upx"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "node": [
+        "dist/node.d.ts"
+      ]
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./node": {
+      "types": "./dist/node.d.ts",
+      "default": "./dist/node.js"
+    },
+    "./package.json": "./package.json"
+  }
+}

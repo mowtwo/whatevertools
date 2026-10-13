@@ -98,7 +98,7 @@ export function createWhateverTools(opts: WhateverToolsOnUtoolsOptions): Whateve
       // uTools 没有这个接口
       activeWindow: async () => null,
     },
-    dialog: { open: (o = {}) => u.showOpenDialog(o), save: (o = {}) => u.showSaveDialog(o) },
+    dialog: { open: (o = {}) => u.showOpenDialog(o), save: (o = {}) => u.showSaveDialog(o), openAsync: async (o = {}) => u.showOpenDialog(o), saveAsync: async (o = {}) => u.showSaveDialog(o) },
     shell: { openPath: (p) => u.shellOpenPath(p), trash: (p) => u.shellTrashItem(p), showInFolder: (p) => u.shellShowItemInFolder(p), openExternal: (x) => u.shellOpenExternal(x), beep: () => u.shellBeep() },
     clipboard: { writeText: (t) => u.copyText(t), writeImage: (i) => u.copyImage(i), writeFiles: (p) => u.copyFile(p), readFiles: () => u.getCopiedFiles() },
     input: {

@@ -1,9 +1,10 @@
 // 打包：utools（原样输出，零运行时）/ electron（独立应用）/ web（静态站点）
 import fs from 'node:fs'
 import path from 'node:path'
-import { loadManifest, nativeManifestLoader, RUNTIME_VERSION, type PluginManifest } from '@whatevertools/core'
+import { loadManifest, nativeManifestLoader, RUNTIME_VERSION, supportsTarget, type PluginManifest } from '@whatevertools/core'
 import { utoolsManifestLoader } from '@whatevertools/compat-utools'
 import { printReport, scanUsage, walk } from './report'
+import { buildWebRuntime, bundlePreload, findPreloads, injectWebLoader } from './web'
 
 export type Target = 'utools' | 'electron' | 'web'
 
@@ -73,6 +74,7 @@ export async function pack(o: PackOptions) {
     if (v !== undefined) manifestFiles[f] = v
   }
   const manifest = loadManifest([nativeManifestLoader, utoolsManifestLoader], { dir, files: manifestFiles })
+  if (!supportsTarget(manifest, o.target)) throw new Error(`${manifest.name} 声明只支持 ${manifest.targets!.join(' / ')}，不能打包成 ${o.target}（见 whatevertools.json 的 targets）`)
   const name = o.name ?? 'whatevertools'
   if (!/^[A-Za-z_$][\w$]*$/.test(name)) throw new Error(`--name 必须是合法的 JS 标识符（会作为全局变量名注入）：${name}`)
   const pkgName = safeName(o.packageName ?? (o.name ? `${o.name}-${manifest.id}` : manifest.id))
@@ -244,54 +246,20 @@ interface WebCtx extends BuildCtx {
 }
 
 /** 把 require('fs') 等 Node 内置模块和 electron 指向运行时垫片 */
-function shimPlugin() {
-  const builtins = new Set(require('node:module').builtinModules.flatMap((m: string) => [m, `node:${m}`]))
-  return {
-    name: 'whatevertools-shims',
-    setup(build: any) {
-      build.onResolve({ filter: /.*/ }, (args: any) => {
-        if (args.path === 'electron' || builtins.has(args.path)) return { path: args.path, namespace: 'whatevertools-shim' }
-        return undefined
-      })
-      build.onLoad({ filter: /.*/, namespace: 'whatevertools-shim' }, (args: any) => ({ contents: `module.exports = globalThis.__whatevertoolsRequire(${JSON.stringify(args.path)})`, loader: 'js' }))
-    },
-  }
-}
-
-/** 插件里所有会被当作 preload 的脚本：plugin.json 的 preload + 代码里 webPreferences.preload 引用的文件 */
-function findPreloads(dir: string, main?: string) {
-  const set = new Set<string>()
-  if (main) set.add(main.replace(/^\.\//, ''))
-  for (const f of walk(dir, (x) => /\.(m?js|cjs)$/.test(x))) {
-    const src = fs.readFileSync(f, 'utf8')
-    for (const m of src.matchAll(/preload\s*:\s*['"]([^'"]+\.js)['"]/g)) if (fs.existsSync(path.join(dir, m[1]))) set.add(m[1].replace(/^\.\//, ''))
-  }
-  return [...set]
-}
-
 async function packWeb(c: WebCtx) {
-  const esbuild = require('esbuild')
   fs.rmSync(c.out, { recursive: true, force: true })
   const preloads = findPreloads(c.dir, c.manifest.preload)
   // 插件文件（preload 和 node_modules 除外：preload 会打包成浏览器脚本）
   copyDir(c.dir, c.out, (rel) => !rel.endsWith('.map') && !rel.startsWith('node_modules/') && !preloads.includes(rel.replace(/\\/g, '/')))
   // 运行时
   const runtimeFile = `${c.name}-runtime.js`
-  await esbuild.build({
-    entryPoints: [require.resolve('@whatevertools/web/full')],
-    bundle: true, format: 'iife', globalName: `__${c.name}Runtime`, platform: 'browser', target: 'es2020',
-    outfile: path.join(c.out, runtimeFile), minify: true, legalComments: 'none',
-  })
+  fs.writeFileSync(path.join(c.out, runtimeFile), await buildWebRuntime(c.name))
   // preload：CommonJS → 浏览器脚本，Node / electron 模块走垫片
   const preloadMap: Record<string, string> = {}
   for (const rel of preloads) {
     const outRel = `${c.name}-preload/${rel.replace(/\.js$/, '')}.js`
-    await esbuild.build({
-      entryPoints: [path.join(c.dir, rel)], bundle: true, format: 'iife', platform: 'browser', target: 'es2020',
-      outfile: path.join(c.out, outRel), plugins: [shimPlugin()], define: { 'process.env.NODE_ENV': '"production"' },
-      banner: { js: `var __dirname = ${JSON.stringify('/plugin/' + path.posix.dirname(rel)).replace('/.', '')}, __filename = ${JSON.stringify('/plugin/' + rel)};` },
-      logLevel: 'error',
-    })
+    fs.mkdirSync(path.dirname(path.join(c.out, outRel)), { recursive: true })
+    fs.writeFileSync(path.join(c.out, outRel), await bundlePreload(c.dir, rel))
     preloadMap[rel] = outRel
   }
   // 插件文件清单（挂进虚拟文件系统 /plugin）
@@ -310,40 +278,7 @@ async function packWeb(c: WebCtx) {
   for (const f of walk(c.out, (x) => x.endsWith('.html'))) {
     const rel = path.relative(c.out, f)
     const up = path.posix.relative(path.posix.dirname(rel.replace(/\\/g, '/')), '.') || '.'
-    let html = fs.readFileSync(f, 'utf8')
-    html = html.replace(/<script\b([^>]*)>/gi, (m, attrs) => (/\bdata-whatevertools\b/.test(attrs) ? m : `<script data-whatevertools-deferred${attrs.replace(/\btype\s*=\s*(['"])module\1/i, ' data-whatevertools-module').replace(/\btype\s*=\s*(['"])text\/javascript\1/i, '')} type="whatevertools/deferred">`))
-    const loader = `<script data-whatevertools src="${up}/${runtimeFile}"></script>
-<script data-whatevertools>
-(function () {
-  var base = new URL(${JSON.stringify(up + '/')}, location.href).href
-  fetch(base + ${JSON.stringify(`${c.name}.config.json`)}).then(function (r) { return r.json() }).then(function (cfg) {
-    cfg.base = base
-    return window.__${c.name}Runtime.boot(cfg)
-  }).then(function (rt) {
-    var list = document.querySelectorAll('script[type="whatevertools/deferred"]')
-    var chain = Promise.resolve()
-    list.forEach(function (old) {
-      chain = chain.then(function () {
-        return new Promise(function (done) {
-          var s = document.createElement('script')
-          for (var i = 0; i < old.attributes.length; i++) { var a = old.attributes[i]; if (a.name !== 'type' && a.name !== 'data-whatevertools-deferred' && a.name !== 'data-whatevertools-module') s.setAttribute(a.name, a.value) }
-          if (old.hasAttribute('data-whatevertools-module')) s.type = 'module'
-          if (old.src) { s.onload = s.onerror = function () { done() }; s.src = old.src } else { s.textContent = old.textContent; setTimeout(done, 0) }
-          old.parentNode.replaceChild(s, old)
-          if (!old.src) done()
-        })
-      })
-    })
-    // 页面脚本执行完：补发 DOMContentLoaded / load（这些事件早已过去），再让运行时进入插件
-    return chain.then(function () {
-      document.dispatchEvent(new Event('DOMContentLoaded', { bubbles: true }))
-      window.dispatchEvent(new Event('load'))
-      return rt.start()
-    })
-  }).catch(function (e) { console.error('[${c.name}] 启动失败', e); document.body && (document.body.innerHTML = '<pre style="padding:16px;color:#b91c1c">启动失败：' + String(e && e.message || e) + '</pre>') })
-})()
-</script>`
-    html = /<head[^>]*>/i.test(html) ? html.replace(/<head[^>]*>/i, (m) => `${m}\n${loader}`) : loader + html
+    const html = injectWebLoader(fs.readFileSync(f, 'utf8'), { name: c.name, runtimeSrc: `${up}/${runtimeFile}`, base: up + '/', configUrl: `${c.name}.config.json` })
     fs.writeFileSync(f, html)
   }
   fs.writeFileSync(path.join(c.out, 'package.json'), JSON.stringify({ name: c.pkgName, version: c.manifest.version, private: true, description: `${c.product}（web）` }, null, 2))

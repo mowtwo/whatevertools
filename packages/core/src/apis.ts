@@ -61,11 +61,13 @@ export const APIS: ApiSpec[] = [
 
   // 系统
   api('system.notify', 'sync', 'system', 'notification', N, { legacy: 'showNotification' }),
-  api('dialog.open', 'sync', 'system', 'dialog', S('native', 'none'), { legacy: 'showOpenDialog' }),
-  api('dialog.save', 'sync', 'system', 'dialog', S('native', 'none'), { legacy: 'showSaveDialog' }),
-  api('shell.openPath', 'async', 'system', 'shell.open', S('native', 'none'), { scopeArg: 0 , legacy: 'shellOpenPath' }),
+  api('dialog.open', 'sync', 'system', 'dialog', S('native', 'partial'), { legacy: 'showOpenDialog', note: 'web：选目录且带 createDirectory 时返回下载目录；其他情况浏览器没法同步选文件，返回 undefined 并异步弹出选择器，选中的文件按 WebBootConfig.openDialog 交给插件（默认作为 files 进入）。新代码请用 dialog.openAsync' }),
+  api('dialog.save', 'sync', 'system', 'dialog', S('native', 'emulated'), { legacy: 'showSaveDialog', note: 'web：返回 /downloads 下的路径，写进这个路径的文件会由浏览器下载' }),
+  api('dialog.openAsync', 'async', 'system', 'dialog', S('native', 'emulated'), { since: '0.2.0', note: 'web：浏览器文件选择器，选中的文件放在虚拟文件系统 /picked 下' }),
+  api('dialog.saveAsync', 'async', 'system', 'dialog', S('native', 'emulated'), { since: '0.2.0', note: '同 dialog.save' }),
+  api('shell.openPath', 'async', 'system', 'shell.open', S('native', 'partial'), { scopeArg: 0 , legacy: 'shellOpenPath', note: 'web：只对 /downloads 下的文件有效（重新下载）' }),
   api('shell.trash', 'async', 'system', 'shell.trash', S('native', 'none'), { scopeArg: 0 , legacy: 'shellTrashItem' }),
-  api('shell.showInFolder', 'sync', 'system', 'shell.open', S('native', 'none'), { scopeArg: 0 , legacy: 'shellShowItemInFolder' }),
+  api('shell.showInFolder', 'sync', 'system', 'shell.open', S('native', 'mock'), { scopeArg: 0 , legacy: 'shellShowItemInFolder', note: 'web：浏览器管理下载位置，调用不报错也没有效果' }),
   api('shell.openExternal', 'async', 'system', 'shell.external', N, { scopeArg: 0 , legacy: 'shellOpenExternal' }),
   api('shell.beep', 'sync', 'system', undefined, S('native', 'none'), { legacy: 'shellBeep' }),
   api('device.id', 'sync', 'device', 'system.identity', S('emulated', 'emulated'), { legacy: 'getNativeId' }),
@@ -155,7 +157,7 @@ export const APIS: ApiSpec[] = [
 
   // 多媒体 / 图像
   api('media.ffmpeg', 'local', 'media', 'media.ffmpeg', S('emulated', 'partial'), { note: '使用宿主配置或 PATH 中的 ffmpeg；web 端可接 ffmpeg.wasm' , legacy: 'runFFmpeg' }),
-  api('image.sharp', 'local', 'media', 'image.sharp', S('emulated', 'partial'), { note: '宿主安装的 sharp；web 端可接 @img/sharp-wasm32' , legacy: 'sharp' }),
+  api('image.sharp', 'local', 'media', 'image.sharp', S('emulated', 'partial'), { note: 'electron：宿主安装的 sharp；web：@whatevertools/sharp-canvas（Canvas 实现的常用子集，不支持 AVIF 编码、ICC、动图），也可以换成 wasm 版' , legacy: 'sharp' }),
 
   // 付费
   api('billing.isPurchased', 'sync', 'payment', 'payment', S('mock', 'mock'), { note: '默认 true，宿主可 hook' , legacy: 'isPurchasedUser' }),

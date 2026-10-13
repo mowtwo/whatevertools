@@ -296,6 +296,8 @@ export function createApi(caps: Capabilities, ctx: ApiContext): ApiInstance {
     dialog: {
       open: def('dialog.open', caps.dialog?.showOpenDialogSync && ((o: Record<string, unknown> = {}) => caps.dialog!.showOpenDialogSync!(o))),
       save: def('dialog.save', caps.dialog?.showSaveDialogSync && ((o: Record<string, unknown> = {}) => caps.dialog!.showSaveDialogSync!(o))),
+      openAsync: def('dialog.openAsync', caps.dialog && (caps.dialog.showOpenDialog || caps.dialog.showOpenDialogSync) && (async (o: Record<string, unknown> = {}) => (caps.dialog!.showOpenDialog ? caps.dialog!.showOpenDialog(o) : caps.dialog!.showOpenDialogSync!(o)))),
+      saveAsync: def('dialog.saveAsync', caps.dialog && (caps.dialog.showSaveDialog || caps.dialog.showSaveDialogSync) && (async (o: Record<string, unknown> = {}) => (caps.dialog!.showSaveDialog ? caps.dialog!.showSaveDialog(o) : caps.dialog!.showSaveDialogSync!(o)))),
     },
 
     shell: {

@@ -1,0 +1,6 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": { "rootDir": "src", "outDir": "dist", "types": ["node"], "module": "node16", "moduleResolution": "node16" },
+  "include": ["src"],
+  "references": [{ "path": "../core" }, { "path": "../cli" }]
+}

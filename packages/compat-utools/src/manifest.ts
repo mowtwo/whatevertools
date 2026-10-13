@@ -32,6 +32,7 @@ export const utoolsManifestLoader: ManifestLoader = {
         engines: extra.engines,
         permissions: extra.permissions,
         standalone: extra.standalone,
+        targets: extra.targets,
         dev: pj.development ?? extra.dev,
       },
       'utools',

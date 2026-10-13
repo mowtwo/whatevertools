@@ -32,6 +32,12 @@
     },
     {
       "path": "../bridge"
+    },
+    {
+      "path": "../web-files"
+    },
+    {
+      "path": "../sharp-canvas"
     }
   ]
 }

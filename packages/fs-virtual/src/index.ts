@@ -46,6 +46,8 @@ export interface VirtualFsOptions {
   persist?: PersistAdapter
   /** 启动时创建的目录 */
   dirs?: string[]
+  /** 这些目录下的文件不落盘（拖入、选中、待下载的文件只在本次页面里有效） */
+  ephemeral?: string[]
   cwd?: string
 }
 
@@ -76,6 +78,7 @@ export class VirtualFs implements FsCapability {
   private save(p: string) {
     const n = this.nodes.get(p)
     if (!this.opts.persist) return
+    if (this.opts.ephemeral?.some((d) => p === d || p.startsWith(d + '/'))) return
     if (n && !n.lazy) void this.opts.persist.put(p, { type: n.type, data: n.data, mtimeMs: n.mtimeMs, mode: n.mode }).catch(() => {})
     else if (!n) void this.opts.persist.delete(p).catch(() => {})
   }

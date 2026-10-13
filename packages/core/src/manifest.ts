@@ -62,6 +62,8 @@ export interface PluginManifest {
   engines: { whatevertools?: string }
   permissions: Record<string, PermissionRequest>
   standalone: StandaloneConfig
+  /** 插件能在哪些目标上运行（utools / electron / web / 自定义平台名）；不写表示不限制 */
+  targets?: string[]
   /** 由哪个加载器读出来（native / utools / ...） */
   format: string
   /** 开发模式：main 可以是开发服务器网址 */
@@ -85,6 +87,8 @@ export interface WhateverToolsJson {
   engines?: { whatevertools?: string }
   permissions?: Record<string, true | string[] | PermissionRequest>
   standalone?: StandaloneConfig
+  /** 插件能在哪些目标上运行，比如只在桌面上有意义的插件写 ["utools", "electron"] */
+  targets?: string[]
   dev?: { main?: string; preload?: string }
 }
 
@@ -124,6 +128,7 @@ export interface ManifestDraft {
   engines?: { whatevertools?: string }
   permissions?: Record<string, true | string[] | PermissionRequest>
   standalone?: StandaloneConfig
+  targets?: string[]
   dev?: { main?: string; preload?: string }
 }
 
@@ -179,6 +184,7 @@ export function finalizeManifest(dir: string, d: ManifestDraft, format: string, 
   if (engines.whatevertools && !satisfies(RUNTIME_VERSION, engines.whatevertools)) problems.push(`插件要求底座版本 ${engines.whatevertools}，当前是 ${RUNTIME_VERSION}`)
   const permissions: Record<string, PermissionRequest> = {}
   for (const [id, v] of Object.entries(d.permissions ?? {})) permissions[id] = v === true ? {} : Array.isArray(v) ? { scopes: v } : v
+  if (d.targets !== undefined && (!Array.isArray(d.targets) || !d.targets.length || d.targets.some((t) => typeof t !== 'string' || !t))) problems.push('targets 必须是非空的字符串数组')
   const rawId = d.id || 'plugin'
   const id = String(rawId).toLowerCase().replace(/^@/, '').replace(/\//g, '.').replace(SAFE_ID, '-').replace(/^[.-]+/, '')
   // id 会用作目录名：只允许字母数字开头，禁止 . / ..
@@ -199,6 +205,7 @@ export function finalizeManifest(dir: string, d: ManifestDraft, format: string, 
     engines,
     permissions,
     standalone: d.standalone ?? {},
+    targets: d.targets,
     format,
     dev: d.dev,
   }
@@ -230,6 +237,11 @@ export function loadManifest(loaders: ManifestLoader[], src: ManifestSources): P
     if (m) return m
   }
   throw new ManifestError([`${src.dir} 不是可识别的插件（支持的格式：${loaders.map((l) => l.id).join(' / ')}）`])
+}
+
+/** 插件是否声明支持这个目标（没写 targets 表示都支持） */
+export function supportsTarget(m: Pick<PluginManifest, 'targets'>, target: string): boolean {
+  return !m.targets || m.targets.includes(target)
 }
 
 /** 功能是否适用于当前平台 */

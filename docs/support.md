@@ -57,11 +57,13 @@
 | API | uTools 旧名 | 权限 | Electron | Web |
 |---|---|---|---|---|
 | `system.notify` | `showNotification` | `notification` | 原生 | 模拟 |
-| `dialog.open` | `showOpenDialog` | `dialog` | 原生 | — |
-| `dialog.save` | `showSaveDialog` | `dialog` | 原生 | — |
-| `shell.openPath` | `shellOpenPath` | `shell.open` | 原生 | — |
+| `dialog.open` | `showOpenDialog` | `dialog` | 原生 | 部分 |
+| `dialog.save` | `showSaveDialog` | `dialog` | 原生 | 模拟 |
+| `dialog.openAsync` |  | `dialog` | 原生 | 模拟 |
+| `dialog.saveAsync` |  | `dialog` | 原生 | 模拟 |
+| `shell.openPath` | `shellOpenPath` | `shell.open` | 原生 | 部分 |
 | `shell.trash` | `shellTrashItem` | `shell.trash` | 原生 | — |
-| `shell.showInFolder` | `shellShowItemInFolder` | `shell.open` | 原生 | — |
+| `shell.showInFolder` | `shellShowItemInFolder` | `shell.open` | 原生 | 占位 |
 | `shell.openExternal` | `shellOpenExternal` | `shell.external` | 原生 | 模拟 |
 | `shell.beep` | `shellBeep` |  | 原生 | — |
 | `system.appName` | `getAppName` |  | 原生 | 模拟 |

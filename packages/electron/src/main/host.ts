@@ -93,6 +93,7 @@ export class WhateverToolsHost extends HostCore<PluginRuntime> {
     this.panelAdapter = options.shell as any
     this.mcp = new McpServer(this)
     this.installIpc()
+    if (process.env.WHATEVERTOOLS_HEADLESS) this.installHeadlessGuards()
     if (options.theme) nativeTheme.themeSource = options.theme
     // 主题变化推给所有运行中的插件（经过 event:theme.change hook）
     nativeTheme.on('updated', () => {
@@ -214,6 +215,22 @@ export class WhateverToolsHost extends HostCore<PluginRuntime> {
       const win = BrowserWindow.fromWebContents(wc)
       if (win && !this.shell) win.destroy()
       else wc.close()
+    }
+  }
+
+  /**
+   * 无界面模式（自动化测试）：插件建的窗口照常显示（插件的可见性逻辑不变），但固定在屏幕外，
+   * 不能移回屏幕、置顶、全屏或抢焦点，绝不出现在用户屏幕上
+   */
+  private installHeadlessGuards() {
+    this.hooks.on('window:create', {
+      apply: async (_c, next) => {
+        const r = (await next()) as { url: string; options: Record<string, unknown> } | null
+        return r && { ...r, options: { ...r.options, x: -30000, y: -30000, center: false, alwaysOnTop: false, fullscreen: false, kiosk: false, focusable: false, enableLargerThanScreen: true } }
+      },
+    })
+    for (const m of ['focus', 'setAlwaysOnTop', 'setFullScreen', 'setSimpleFullScreen', 'setKiosk', 'setBounds', 'setContentBounds', 'setPosition', 'center', 'moveTop', 'setVisibleOnAllWorkspaces']) {
+      this.hooks.on(`window:${m}`, { apply: () => undefined })
     }
   }
 

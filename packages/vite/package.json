@@ -1,0 +1,29 @@
+{
+  "name": "@whatevertools/vite",
+  "version": "0.1.1",
+  "description": "Vite plugin for whatevertools: write whatevertools.json, pack the build for uTools / Electron / web, and emulate the plugin runtime in vite dev",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mowtwo/whatevertools.git",
+    "directory": "packages/vite"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "@whatevertools/cli": "workspace:*",
+    "@whatevertools/core": "workspace:*"
+  },
+  "peerDependencies": {
+    "vite": ">=5"
+  },
+  "devDependencies": {
+    "vite": "^8.3.4"
+  }
+}

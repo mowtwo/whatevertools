@@ -1,0 +1,6 @@
+{
+  "main": "index.html",
+  "logo": "logo.png",
+  "preload": "preload.js",
+  "features": [{ "code": "hello", "explain": "测试", "cmds": ["你好"] }]
+}

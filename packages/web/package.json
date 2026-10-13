@@ -24,7 +24,9 @@
     "@whatevertools/fs-virtual": "workspace:*",
     "@whatevertools/shim-node": "workspace:*",
     "@whatevertools/shim-electron": "workspace:*",
-    "@whatevertools/bridge": "workspace:*"
+    "@whatevertools/bridge": "workspace:*",
+    "@whatevertools/web-files": "workspace:*",
+    "@whatevertools/sharp-canvas": "workspace:*"
   },
   "exports": {
     ".": "./dist/index.js",

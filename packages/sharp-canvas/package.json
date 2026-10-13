@@ -1,0 +1,19 @@
+{
+  "name": "@whatevertools/sharp-canvas",
+  "version": "0.1.1",
+  "description": "Browser implementation of a practical subset of the sharp image API on top of HTML Canvas",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mowtwo/whatevertools.git",
+    "directory": "packages/sharp-canvas"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ]
+}
