@@ -1,5 +1,6 @@
 // 验收：快拼图插件在 Electron 兼容层里运行（界面、preload、sharp、MCP 拼图）
 const path = require('node:path')
+const sweepElectron = require('./sweep-electron')
 const fs = require('node:fs')
 
 module.exports = async (t) => {
@@ -34,4 +35,7 @@ module.exports = async (t) => {
     t.assert.ok(fs.existsSync(f.path))
     host.mcp.stop()
   })
+
+  // 每个页面、弹窗点一遍，零报错（步骤和网页版巡检共用）
+  await sweepElectron(t, host, plugin, 'quick-union-image.mjs')
 }

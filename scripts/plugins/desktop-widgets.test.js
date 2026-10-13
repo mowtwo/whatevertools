@@ -1,6 +1,7 @@
 // 验收：桌面挂件插件在 Electron 兼容层里运行。
 // 安全措施：用 window:* hook 把插件建的所有窗口放到屏幕外、不显示、不置顶，绝不在真实屏幕上出现可能拦截鼠标的覆盖层。
 const path = require('node:path')
+const sweepElectron = require('./sweep-electron')
 
 module.exports = async (t) => {
   const dir = process.env.PLUGIN_DIR || path.resolve(__dirname, '../../../utools-desktop-widgets/dist')
@@ -58,4 +59,7 @@ module.exports = async (t) => {
     const r = await js('utools.db.allDocs().map((d) => d._id)')
     t.assert.ok(Array.isArray(r))
   })
+
+  // 每个页面、弹窗点一遍，零报错（步骤和网页版巡检共用）
+  await sweepElectron(t, host, plugin, 'desktop-widgets.mjs')
 }

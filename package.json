@@ -13,7 +13,7 @@
     "test:e2e": "node scripts/e2e.mjs",
     "test:all": "pnpm build && pnpm test && pnpm test:e2e && pnpm test:web && pnpm test:pack && pnpm test:vite && pnpm test:sharp && pnpm test:webhost",
     "test:web": "node scripts/web-e2e.mjs",
-    "test:plugins": "node scripts/plugins.mjs",
+    "test:plugins": "node scripts/plugins.mjs && node scripts/sweep-web.mjs",
     "test:pack": "node scripts/pack-e2e.mjs",
     "test:vite": "node packages/vite/test/vite.e2e.mjs",
     "test:sharp": "node packages/sharp-canvas/test/browser.mjs",

@@ -59,12 +59,18 @@ export function createApi(caps: Capabilities, ctx: ApiContext): ApiInstance {
   const log = ctx.log ?? ((m: string, d?: unknown) => console.warn(`[whatevertools] ${m}`, d ?? ''))
   const policy = ctx.unsupported ?? 'throw'
 
+  /**
+   * 平台不支持的 API：同步 API 抛错（或按 warn 策略返回 undefined）；
+   * 返回 Promise 的 API 返回失败的 Promise，不同步抛错——插件按「异步失败」写的错误处理才接得住
+   */
   const unsupported = (name: string): never => {
     const err = new UnsupportedError(`[whatevertools] 当前平台（${caps.platform}）不支持 ${name}`)
+    const isAsync = findApi(name)?.kind === 'async'
     if (policy === 'warn') {
       log(err.message)
-      return undefined as never
+      return (isAsync ? Promise.resolve(undefined) : undefined) as never
     }
+    if (isAsync) return Promise.reject(err) as never
     throw err
   }
 
@@ -84,10 +90,20 @@ export function createApi(caps: Capabilities, ctx: ApiContext): ApiInstance {
   /** 包一个 API：先检查权限，能力缺失时按策略处理 */
   function def<A extends unknown[], R>(name: string, impl: ((...a: A) => R) | undefined | false, scopeArg?: number) {
     if (!impl) unavailable.add(name)
+    // 返回 Promise 的 API：权限被拒、参数出错等同步异常也变成失败的 Promise，插件的 .catch 才接得住
+    const isAsync = findApi(name)?.kind === 'async'
     return (...args: A): R => {
       if (!impl) return unsupported(name)
-      guard(name, scopeArg !== undefined ? args[scopeArg] : undefined)
-      return impl(...args)
+      if (!isAsync) {
+        guard(name, scopeArg !== undefined ? args[scopeArg] : undefined)
+        return impl(...args)
+      }
+      try {
+        guard(name, scopeArg !== undefined ? args[scopeArg] : undefined)
+        return impl(...args)
+      } catch (e) {
+        return Promise.reject(e) as R
+      }
     }
   }
 
@@ -360,7 +376,8 @@ export function createApi(caps: Capabilities, ctx: ApiContext): ApiInstance {
     },
 
     ai: {
-      chat: def('ai.chat', caps.ai && ((options: any, onChunk?: (chunk: any) => void) => {
+      chat: (caps.ai
+        ? def('ai.chat', (options: any, onChunk?: (chunk: any) => void) => {
         const ac = new AbortController()
         const p = caps.ai!.complete(
           { model: options?.model, messages: options?.messages ?? [], tools: options?.tools },
@@ -375,8 +392,10 @@ export function createApi(caps: Capabilities, ctx: ApiContext): ApiInstance {
           },
         ).then((msg) => (typeof onChunk === 'function' ? undefined : msg))
         return Object.assign(p, { abort: () => ac.abort() }) as any
-      })) as WhateverToolsApi['ai']['chat'],
-      models: def('ai.models', caps.ai && (() => caps.ai!.models())),
+      })
+        : (unavailable.add('ai.chat'), () => Object.assign(Promise.reject(new UnsupportedError(`[whatevertools] 当前宿主（${caps.platform}）没有配置 AI 模型`)), { abort: () => {} }))) as WhateverToolsApi['ai']['chat'],
+      // 没有配置模型提供者：models 直接返回空列表（等同「没有可用模型」，也不询问权限），chat 返回失败的 Promise（带 abort）
+      models: caps.ai ? def('ai.models', () => caps.ai!.models()) : (unavailable.add('ai.models'), () => Promise.resolve([])),
     },
 
     tools: {

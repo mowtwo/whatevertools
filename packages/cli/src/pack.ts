@@ -328,8 +328,8 @@ interface WebCtx extends BuildCtx {
 async function packWeb(c: WebCtx) {
   fs.rmSync(c.out, { recursive: true, force: true })
   const preloads = findPreloads(c.dir, c.manifest.preload)
-  // 插件文件（preload 和 node_modules 除外：preload 会打包成浏览器脚本）
-  copyDir(c.dir, c.out, (rel) => !rel.endsWith('.map') && !rel.startsWith('node_modules/') && !preloads.includes(rel.replace(/\\/g, '/')))
+  // 插件文件（node_modules 除外）。preload 另外打包成浏览器脚本，原文件也保留：运行时按文件清单挂载 /plugin，插件也可能读它
+  copyDir(c.dir, c.out, (rel) => !rel.endsWith('.map') && !rel.startsWith('node_modules/'))
   // 运行时
   const runtimeFile = `${c.name}-runtime.js`
   fs.writeFileSync(path.join(c.out, runtimeFile), await buildWebRuntime(c.name))
@@ -357,7 +357,9 @@ async function packWeb(c: WebCtx) {
   for (const f of walk(c.out, (x) => x.endsWith('.html'))) {
     const rel = path.relative(c.out, f)
     const up = path.posix.relative(path.posix.dirname(rel.replace(/\\/g, '/')), '.') || '.'
-    const html = injectWebLoader(fs.readFileSync(f, 'utf8'), { name: c.name, runtimeSrc: `${up}/${runtimeFile}`, base: up + '/', configUrl: `${c.name}.config.json`, dirIndex: path.basename(rel) === 'index.html' })
+    let html = injectWebLoader(fs.readFileSync(f, 'utf8'), { name: c.name, runtimeSrc: `${up}/${runtimeFile}`, base: up + '/', configUrl: `${c.name}.config.json`, dirIndex: path.basename(rel) === 'index.html' })
+    // 页面没有图标时用插件 logo（否则浏览器去请求 /favicon.ico）
+    if (c.manifest.logo && !/<link[^>]+rel=["'][^"']*icon/i.test(html)) html = html.replace(/<head[^>]*>/i, (m) => `${m}\n<link rel="icon" href="${up}/${c.manifest.logo}">`)
     fs.writeFileSync(f, html)
   }
   fs.writeFileSync(path.join(c.out, 'package.json'), JSON.stringify({ name: c.pkgName, version: c.manifest.version, private: true, description: `${c.product}（web）` }, null, 2))

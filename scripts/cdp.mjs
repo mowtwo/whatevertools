@@ -11,7 +11,11 @@ const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'wt-cdp-'))
 const proc = spawn(chrome, ['--headless=new', `--remote-debugging-port=${port}`, '--no-first-run', '--no-default-browser-check', `--user-data-dir=${profile}`, '--window-size=1200,800', 'about:blank'], { stdio: 'ignore' })
 const cleanup = () => {
   try { proc.kill() } catch {}
-  setTimeout(() => fs.rmSync(profile, { recursive: true, force: true }), 300)
+  // Chrome 有时不理 SIGTERM：等一下还在就强制结束
+  setTimeout(() => {
+    if (proc.exitCode === null) try { proc.kill('SIGKILL') } catch {}
+    setTimeout(() => fs.rmSync(profile, { recursive: true, force: true }), 200)
+  }, 300)
 }
 process.on('exit', () => { try { proc.kill() } catch {} })
 for (const sig of ['SIGTERM', 'SIGINT']) process.on(sig, () => { cleanup(); setTimeout(() => process.exit(1), 400) })
@@ -55,4 +59,4 @@ const shot = await send('Page.captureScreenshot', { format: 'png' })
 fs.writeFileSync(`${out}/shot.png`, Buffer.from(shot.result.data, 'base64'))
 fs.writeFileSync(`${out}/result.json`, JSON.stringify({ results, logs }, null, 2))
 ws.close(); cleanup()
-setTimeout(() => process.exit(0), 400)
+setTimeout(() => process.exit(0), 700)
