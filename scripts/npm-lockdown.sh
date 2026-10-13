@@ -7,9 +7,9 @@ cd "$(dirname "$0")/.."
 for f in packages/*/package.json; do
   [ "$(node -p "require('./$f').private === true")" = "true" ] && continue
   name=$(node -p "require('./$f').name")
-  echo "== $name"
-  npm access set mfa=publish "$name" || echo "   （设置发布权限失败：$name）"
+  echo "== ${name}"
+  npm access set mfa=publish "$name" || echo "   （设置发布权限失败：${name}）"
   if npm view "$name@0.0.0-stage" version >/dev/null 2>&1; then
-    npm deprecate "$name@0.0.0-stage" "占位版本，请使用最新版" || echo "   （标记废弃失败：$name）"
+    npm deprecate "$name@0.0.0-stage" "占位版本，请使用最新版" || echo "   （标记废弃失败：${name}）"
   fi
 done
