@@ -1,6 +1,6 @@
 {
   "name": "@whatevertools/web-host",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Install and run uTools-style plugin packages (.upx / .asar / .zip / folders) on any website at runtime: IndexedDB storage, a Service Worker that serves each plugin, one iframe per plugin, install policy",
   "license": "MIT",
   "repository": {

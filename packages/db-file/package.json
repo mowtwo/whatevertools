@@ -1,6 +1,6 @@
 {
   "name": "@whatevertools/db-file",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "whatevertools storage adapter: JSON snapshot + attachment files on the local file system (Node / Electron)",
   "license": "MIT",
   "repository": {

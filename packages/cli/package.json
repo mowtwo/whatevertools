@@ -1,6 +1,6 @@
 {
   "name": "@whatevertools/cli",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "whatevertools command line: run plugins in a bare Electron launcher, check compatibility, and pack plugins for uTools, Electron or the web",
   "license": "MIT",
   "repository": {

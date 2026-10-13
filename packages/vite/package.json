@@ -1,6 +1,6 @@
 {
   "name": "@whatevertools/vite",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Vite plugin for whatevertools: write whatevertools.json, pack the build for uTools / Electron / web, and emulate the plugin runtime in vite dev",
   "license": "MIT",
   "repository": {

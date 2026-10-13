@@ -7,9 +7,12 @@
 - **处处可 hook**：注入给插件的每个函数和属性都支持访问器级别（get / set / apply / construct）的拦截；宿主侧的入口、来源、面板、窗口、权限、生命周期、提供者也都有 hook 点。
 - **按插件的权限**：参考 Chrome 的网站权限，默认询问；每一项权限都可以按插件单独设置。
 - **版本与身份注入**：插件能拿到底座版本、宿主版本、伪装平台和插件自己的版本信息。
-- **一条命令打包**：`utools`（原样输出，零运行时）、`electron`（独立应用）、`web`（静态站点）。后两者可以自定义 API 的注入名和包名。
+- **一条命令打包**：`utools`（原样输出，零运行时）、`electron`（独立应用，可出签名、公证的 dmg / nsis / AppImage）、`web`（静态站点）。后两者可以自定义 API 的注入名和包名；配置文件驱动、`--json` 输出、固定退出码，适合 make 和 CI。
+- **插件包（upx）**：兼容安装模式——加了 SDK 的 Electron 应用或网站可以动态安装任意 `.upx` 插件包，数量、白名单可配；固定打包模式——一个或几个插件直接打成一个二进制或一个网页。uTools 加密的 `.upxs` 不支持。
+- **可替换的网页适配器**：Canvas 版 sharp、文件对话框与下载、虚拟文件系统、本地 bridge……每个补齐网页能力的实现都是独立的包。
+- **Vite 插件、Agent skill、llms.txt**：普通 Vite 项目一键产出三端；给 AI Agent 的 skill 随 CLI 分发（`npx whatevertools skill`）。
 
-> 状态：0.1.0，开发中。Electron 和 Web 已有完整的端到端测试；Tauri 还没有开始。
+> 状态：0.2.0。Electron 和 Web 都有完整的端到端测试；Tauri 还没有开始。文档和案例见 [官网](website/)（`website/`，VitePress）。
 
 ## 安装
 
@@ -70,7 +73,10 @@ pnpm wt pack ../your-plugin/dist --target web --name acme
 | `@whatevertools/api` | 用能力接口拼出原生 API（所有平台共用），`getApi()` |
 | `@whatevertools/compat-utools` | uTools 兼容层：`window.utools`、plugin.json 加载器、text / regex / over / img / files / window 入口、main / panel / hotkey / redirect 来源、拼音搜索 |
 | `@whatevertools/electron` | Electron 平台：宿主、IPC、服务、preload 桥、`require` 拦截、启动器和独立应用外壳 |
-| `@whatevertools/web` | 浏览器平台：能力实现、虚拟文件系统、Node / Electron 模块垫片 |
+| `@whatevertools/web` | 浏览器平台：能力实现、虚拟文件系统、Node / Electron 模块垫片、浏览器内的 CommonJS 加载器 |
+| `@whatevertools/sharp-canvas` | 网页适配器：用 Canvas 实现 sharp 的常用子集（web 运行时默认的 `utools.sharp`） |
+| `@whatevertools/web-files` | 网页适配器：文件对话框和下载（`showSaveDialog` 返回 `/downloads/…`，写入后浏览器下载） |
+| `@whatevertools/upx` | 读写 `.upx`（gzip asar）、`.asar`，读 `.zip`；识别并拒绝加密的 `.upxs`；浏览器和 Node 都能用 |
 | `@whatevertools/web-host` | 网页上动态安装插件包：IndexedDB 存储、Service Worker 提供文件、每个插件一个 iframe、安装策略 |
 | `@whatevertools/shim-node` / `shim-electron` | 用能力接口拼出 `fs`、`path`、`os`、`child_process`……以及 `ipcRenderer`、`clipboard`、`nativeImage`…… |
 | `@whatevertools/fs-virtual` | 内存常驻、可持久化到 IndexedDB 的 POSIX 文件系统 |
@@ -78,7 +84,8 @@ pnpm wt pack ../your-plugin/dist --target web --name acme
 | `@whatevertools/db-file` / `db-indexeddb` | 数据库存储适配器 |
 | `@whatevertools/sync-folder` / `sync-http` | 数据同步适配器（共享文件夹；HTTP，附参考服务端） |
 | `@whatevertools/utools` | 给原生 uTools 插件用的类型包：`window.utools` 的 `.d.ts`、plugin.json 的 JSON Schema，零运行时；可选的 `/runtime` 在 uTools 上实现原生 API |
-| `@whatevertools/cli` | `whatevertools`（`wt`）命令：`run / check / pack`，以及启动器 |
+| `@whatevertools/cli` | `whatevertools`（`wt`）命令：`build / doctor / init / skill / run / check / pack`，配置文件、安装包与签名、启动器、Agent skill |
+| `@whatevertools/vite` | Vite 插件：写 `whatevertools.json`、`vite build` 时按目标打包、`vite dev` 时在浏览器里模拟插件环境 |
 | `apps/launcher` | 把启动器（`@whatevertools/cli` 里的 `launcher`，`wt run` 用的也是它）打包成独立桌面应用的外壳 |
 
 ## 写插件
@@ -204,10 +211,21 @@ uTools 的 6 种入口类型和 4 种来源由兼容层默认注册，可以替�
 
 > 插件 preload 里的 `require` 拦截是纵深防御，不是安全边界：同进程里的恶意代码仍可能绕过。需要强隔离时要用（规划中的）严格模式。
 
+## 打包与插件包
+
+```bash
+npx whatevertools init --ci github            # whatevertools.config.ts + GitHub Actions（三平台矩阵）
+npx whatevertools build --target electron --binary --json   # 出安装包；签名、公证凭据只走环境变量
+npx whatevertools doctor --target electron --binary         # 检查 electron-builder 和签名凭据
+npx whatevertools pack ocr.upx translate.upx --target electron --product 工具箱   # 多个插件打成一个应用
+```
+
+配置、签名、CI 详见 [docs/packaging.md](docs/packaging.md)。运行时安装插件包：Electron 用 `host.installer`（`runApp` 的 `install` 策略），网站用 `@whatevertools/web-host`。
+
 ## 测试
 
 ```bash
-pnpm test:all       # 构建 + 单元测试 + Electron 端到端（功能、安全、生命周期）+ Web 端到端 + 打包产物启动
+pnpm test:all       # 构建 + 单元测试 + Electron 端到端（功能、安全、生命周期、插件包安装）+ Web 端到端 + 打包产物启动 + Vite + sharp-canvas + web-host
 pnpm test:plugins   # 用 ../utools-quick-union-image 和 ../utools-desktop-widgets 的 dist 做验收
 ```
 
@@ -219,8 +237,10 @@ pnpm test:plugins   # 用 ../utools-quick-union-image 和 ../utools-desktop-widg
 
 ```bash
 # 改好要发的包的 version 后
-git tag v0.1.1 && git push origin v0.1.1
+git tag v0.2.0 && git push origin v0.2.0
 ```
+
+新增包时先跑 `scripts/npm-trust.sh` 给它配置可信发布者（需要本机 npm 登录和 2FA），之后的版本都走 OIDC。
 
 ## 路线图
 

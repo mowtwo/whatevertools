@@ -1,6 +1,6 @@
 {
   "name": "@whatevertools/shim-node",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Node.js module shims (fs, path, os, events, url, util, buffer, child_process, http...) built on whatevertools capabilities, for platforms without Node (web, tauri)",
   "license": "MIT",
   "repository": {

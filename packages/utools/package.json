@@ -1,6 +1,6 @@
 {
   "name": "@whatevertools/utools",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Type definitions for plugins that ship to uTools itself: window.utools typings and a plugin.json schema. Zero runtime by default; an optional tiny runtime implements the whatevertools native API on top of window.utools.",
   "license": "MIT",
   "repository": {

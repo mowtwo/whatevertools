@@ -1,6 +1,6 @@
 {
   "name": "@whatevertools/shim-electron",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Electron renderer module shim (ipcRenderer, clipboard, nativeImage, shell, webUtils, webFrame) built on whatevertools capabilities, for platforms without Electron",
   "license": "MIT",
   "repository": {

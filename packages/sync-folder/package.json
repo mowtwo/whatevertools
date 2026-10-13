@@ -1,6 +1,6 @@
 {
   "name": "@whatevertools/sync-folder",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "whatevertools sync adapter: replicate through a shared folder (iCloud Drive, Dropbox, Syncthing, NAS)",
   "license": "MIT",
   "repository": {

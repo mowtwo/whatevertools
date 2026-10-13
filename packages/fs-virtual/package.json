@@ -1,6 +1,6 @@
 {
   "name": "@whatevertools/fs-virtual",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "In-memory POSIX file system with optional IndexedDB persistence; implements the whatevertools FsCapability (sync + async)",
   "license": "MIT",
   "repository": {

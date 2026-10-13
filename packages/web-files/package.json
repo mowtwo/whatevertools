@@ -1,6 +1,6 @@
 {
   "name": "@whatevertools/web-files",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "whatevertools web adapter: file dialogs and downloads for browsers (showOpenDialog / showSaveDialog / shell.openPath on top of a virtual file system)",
   "license": "MIT",
   "repository": {

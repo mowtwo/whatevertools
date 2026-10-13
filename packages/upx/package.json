@@ -1,6 +1,6 @@
 {
   "name": "@whatevertools/upx",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Read and write uTools plugin packages (.upx) and Electron asar archives in Node and browsers; detects encrypted .upxs",
   "license": "MIT",
   "repository": {

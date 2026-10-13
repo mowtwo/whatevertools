@@ -1,6 +1,6 @@
 {
   "name": "@whatevertools/launcher",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "private": true,
   "description": "Bare Electron launcher that runs plugins through the whatevertools runtime",
   "license": "MIT",
