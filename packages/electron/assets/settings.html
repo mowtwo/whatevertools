@@ -31,13 +31,14 @@
 <main>
   <h1>插件权限与快捷键</h1>
   <div class="sub">默认询问；每个插件、每项权限可以单独设置。插件自己的数据库和私有目录始终可用。</div>
-  <div class="bar"><button id="add">添加插件目录…</button><button id="mcp">复制 MCP 配置</button><span id="msg" class="sub"></span></div>
+  <div class="bar"><button id="add">添加插件目录…</button><button id="install">安装插件包…</button><button id="mcp">复制 MCP 配置</button><span id="msg" class="sub"></span></div>
   <div id="root"></div>
 </main>
 <script>
   const LABEL = { grant: '允许', deny: '禁止', ask: '询问' }
   async function draw() {
     const data = await window.settings.load()
+    const managed = new Map((await window.settings.plugins()).map((m) => [m.id, m]))
     const root = document.getElementById('root')
     root.innerHTML = ''
     for (const p of data) {
@@ -47,7 +48,7 @@
       sec.querySelector('.v').textContent = `${p.id} · v${p.version}${p.legacy ? ' · 旧格式插件' : ''}`
       sec.querySelector('button').onclick = async () => { await window.settings.reset(p.id); draw() }
       const rm = document.createElement('button')
-      rm.textContent = '移除插件'
+      rm.textContent = managed.get(p.id)?.installed ? '卸载插件' : '移除插件'
       rm.style.marginLeft = '8px'
       rm.onclick = async () => { await window.settings.removePlugin(p.id); draw() }
       sec.querySelector('header').appendChild(rm)
@@ -108,6 +109,15 @@
       document.getElementById('msg').textContent = id ? `已添加 ${id}` : ''
     } catch (e) {
       document.getElementById('msg').textContent = '添加失败：' + e.message
+    }
+    draw()
+  }
+  document.getElementById('install').onclick = async () => {
+    try {
+      const id = await window.settings.installPlugin()
+      document.getElementById('msg').textContent = id ? `已安装 ${id}` : ''
+    } catch (e) {
+      document.getElementById('msg').textContent = '安装失败：' + String(e.message).replace(/^Error invoking remote method '[^']+': (Error: )?/, '')
     }
     draw()
   }

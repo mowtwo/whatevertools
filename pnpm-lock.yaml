@@ -62,6 +62,9 @@ importers:
       '@whatevertools/electron':
         specifier: workspace:*
         version: link:../electron
+      '@whatevertools/upx':
+        specifier: workspace:*
+        version: link:../upx
       '@whatevertools/web':
         specifier: workspace:*
         version: link:../web
@@ -109,6 +112,9 @@ importers:
       '@whatevertools/db-file':
         specifier: workspace:*
         version: link:../db-file
+      '@whatevertools/upx':
+        specifier: workspace:*
+        version: link:../upx
       electron:
         specifier: '>=30'
         version: 43.7.9

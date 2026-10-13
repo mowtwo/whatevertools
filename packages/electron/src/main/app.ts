@@ -48,7 +48,8 @@ export async function runApp(cfg: AppConfig): Promise<{ host: WhateverToolsHost;
   if (cfg.hotkey) sourceOptions.main = { ...sourceOptions.main, accelerator: cfg.hotkey }
   // 独立应用没有主面板和超级面板，只保留指令快捷键和插件跳转
   const standaloneDefaults = cfg.mode === 'standalone' && cfg.entrySources === undefined
-  const host = new WhateverToolsHost({ ...cfg, shell, sourceOptions, entrySources: standaloneDefaults ? false : cfg.entrySources })
+  const install = cfg.install ?? { enabled: cfg.mode === 'launcher' }
+  const host = new WhateverToolsHost({ ...cfg, install, shell, sourceOptions, entrySources: standaloneDefaults ? false : cfg.entrySources })
   if (standaloneDefaults) {
     for (const c of host.compatLayers) for (const s of c.layer.sources ?? []) if (s.id === 'hotkey' || s.id === 'redirect') host.sources.register(s)
   }
@@ -56,11 +57,14 @@ export async function runApp(cfg: AppConfig): Promise<{ host: WhateverToolsHost;
   const loaded: PluginRuntime[] = []
   for (const dir of cfg.plugins) {
     try {
-      loaded.push(host.loadPlugin(dir))
+      // 直接给的插件包（.upx / .asar / .zip）：解到临时目录运行，不安装
+      if (fs.statSync(dir).isFile()) loaded.push(await host.installer.install(dir, { temporary: true }))
+      else loaded.push(host.loadPlugin(dir))
     } catch (e: any) {
       host.log('error', `加载插件失败：${dir}`, e.message)
     }
   }
+  if (install.enabled !== false) loaded.push(...host.installer.loadAll())
   if (cfg.mcp?.enabled) {
     try {
       await host.mcp.start(cfg.mcp.port, cfg.mcp.host)
@@ -127,7 +131,16 @@ export async function runApp(cfg: AppConfig): Promise<{ host: WhateverToolsHost;
   host.startSources()
   // 设置页：添加 / 移除插件目录（写回配置文件）
   shell.setPluginManager({
-    list: () => [...host.plugins.values()].map((p) => ({ id: p.id, name: p.manifest.name, dir: p.manifest.dir })),
+    list: () => {
+      const installed = new Set(host.installer.list().map((r) => r.id))
+      return [...host.plugins.values()].map((p) => ({ id: p.id, name: p.manifest.name, dir: p.manifest.dir, installed: installed.has(p.id) }))
+    },
+    install: install.enabled === false ? undefined : async () => {
+      const { dialog } = require('electron')
+      const r = await dialog.showOpenDialog({ title: '选择插件包', filters: [{ name: '插件包', extensions: ['upx', 'asar', 'zip'] }], properties: ['openFile'] })
+      if (r.canceled || !r.filePaths[0]) return null
+      return (await host.installer.install(r.filePaths[0])).id
+    },
     add: async () => {
       const { dialog } = require('electron')
       const r = await dialog.showOpenDialog({ title: '选择插件目录（包含 plugin.json 或 whatevertools.json）', properties: ['openDirectory'] })
@@ -137,6 +150,7 @@ export async function runApp(cfg: AppConfig): Promise<{ host: WhateverToolsHost;
       return p.id
     },
     remove: (id: string) => {
+      if (host.installer.list().some((r) => r.id === id)) return host.installer.uninstall(id)
       host.unloadPlugin(id)
       persistPlugins()
     },
@@ -147,7 +161,8 @@ export async function runApp(cfg: AppConfig): Promise<{ host: WhateverToolsHost;
     try {
       raw = JSON.parse(fs.readFileSync(cfg.configFile, 'utf8'))
     } catch {}
-    raw.plugins = [...host.plugins.values()].map((p) => p.manifest.dir)
+    const installed = new Set(host.installer.list().map((r) => r.id))
+    raw.plugins = [...host.plugins.values()].filter((p) => !installed.has(p.id) && !p.manifest.dir.startsWith(require('node:os').tmpdir())).map((p) => p.manifest.dir)
     fs.mkdirSync(path.dirname(cfg.configFile), { recursive: true })
     fs.writeFileSync(cfg.configFile, JSON.stringify(raw, null, 2))
   }

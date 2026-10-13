@@ -6,7 +6,7 @@ import crypto from 'node:crypto'
 import { pathToFileURL, fileURLToPath } from 'node:url'
 import { app, BrowserWindow, dialog, ipcMain, nativeTheme, session as Session, shell as eShell, webContents as WebContentsStatic, type WebContents } from 'electron'
 import {
-  API_MAP, HostCore, PERMISSION_MAP, type HookRegistry, type CompatLayerConfig, type CompatLayerDescriptor, type HostCoreOptions, type PermissionSet, type PluginManifest,
+  API_MAP, HostCore, PERMISSION_MAP, type HookRegistry, type InstallPolicy, type CompatLayerConfig, type CompatLayerDescriptor, type HostCoreOptions, type PermissionSet, type PluginManifest,
   type ResolvedCompat, type Grant,
 } from '@whatevertools/core'
 import { CH, type BridgeContext, type CompatLayer, type PermResult, type WindowKind, type WireError } from '../shared/protocol'
@@ -17,6 +17,7 @@ import { McpServer } from './services/mcp'
 import { electronSourcePlatform } from './source-platform'
 import { JsonFileHostStore } from './store'
 import { UBrowsers } from './services/ubrowser'
+import { PluginInstaller } from './installer'
 
 export interface HostOptions extends Omit<HostCoreOptions, 'compat'> {
   /** 主题：跟随系统（默认）/ 固定浅色 / 固定深色；插件页的 prefers-color-scheme 跟着变 */
@@ -40,6 +41,8 @@ export interface HostOptions extends Omit<HostCoreOptions, 'compat'> {
   unsupported?: 'throw' | 'warn'
   /** 自定义权限问询界面；默认用系统对话框 */
   prompt?: (req: PermissionPromptRequest) => Promise<PermissionPromptAnswer>
+  /** 动态安装插件包（upx / asar / zip）的策略；不写时不允许安装（runApp 的启动器模式默认允许） */
+  install?: InstallPolicy
 }
 
 interface WcInfo {
@@ -58,6 +61,8 @@ interface WcInfo {
 
 export class WhateverToolsHost extends HostCore<PluginRuntime> {
   readonly dataDir: string
+  /** 插件包安装器（安装 / 升级 / 卸载 upx、asar、zip） */
+  readonly installer: PluginInstaller
   /** 方法名 → 实现（无原型对象，避免 constructor 等继承属性被当成方法调用） */
   readonly handlers: Record<string, Handler> = Object.assign(Object.create(null), services)
   readonly mcp: McpServer
@@ -92,6 +97,7 @@ export class WhateverToolsHost extends HostCore<PluginRuntime> {
     this.shell = options.shell
     this.panelAdapter = options.shell as any
     this.mcp = new McpServer(this)
+    this.installer = new PluginInstaller(this, options.install ?? { enabled: false })
     this.installIpc()
     if (process.env.WHATEVERTOOLS_HEADLESS) this.installHeadlessGuards()
     if (options.theme) nativeTheme.themeSource = options.theme

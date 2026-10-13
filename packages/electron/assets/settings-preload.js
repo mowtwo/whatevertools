@@ -7,6 +7,7 @@ contextBridge.exposeInMainWorld('settings', {
   reset: (plugin) => ipcRenderer.invoke('whatevertools-settings:reset', plugin),
   plugins: () => ipcRenderer.invoke('whatevertools-settings:plugins'),
   addPlugin: () => ipcRenderer.invoke('whatevertools-settings:plugin-add'),
+  installPlugin: () => ipcRenderer.invoke('whatevertools-settings:plugin-install'),
   removePlugin: (id) => ipcRenderer.invoke('whatevertools-settings:plugin-remove', id),
   copyMcp: () => ipcRenderer.invoke('whatevertools-settings:copy-mcp'),
 })

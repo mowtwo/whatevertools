@@ -2,7 +2,9 @@
 // whatevertools 命令行
 //   whatevertools run <插件目录...> [--dev]                         在裸 Electron 启动器里运行
 //   whatevertools check <插件目录> [--name whatevertools]                   兼容报告
-//   whatevertools pack <插件目录> --target utools|electron|web
+//   whatevertools pack <插件目录或插件包...> --target utools|electron|web
+//        多个插件：electron 打成一个启动器应用，web 打成带入口页的站点（需要 --product）
+//        [--allow-install] [--max-plugins <n>] [--app-version <版本>]
 //        [--name <注入名/底座名>] [--package <包名>] [--product <应用名>] [--compat utools[:别名]|none]
 //        [--host-name <宿主名>] [--host-version <宿主版本>] [--mock-platform uTools] [--mock-version 7.0.0] [--out <目录>]
 import path from 'node:path'
@@ -11,7 +13,7 @@ import { pack, type Target } from './pack'
 import { printReport, scanUsage } from './report'
 
 /** 不带值的开关 */
-const BOOLEAN_FLAGS = new Set(['dev', 'help'])
+const BOOLEAN_FLAGS = new Set(['dev', 'help', 'allow-install'])
 
 function parse(argv: string[]) {
   const args: string[] = []
@@ -33,11 +35,12 @@ async function main() {
   const { args, flags } = parse(rest)
   switch (cmd) {
     case 'pack': {
-      if (!args[0]) throw new Error('用法：whatevertools pack <插件目录> --target utools|electron|web')
+      if (!args[0]) throw new Error('用法：whatevertools pack <插件目录或插件包...> --target utools|electron|web')
       const target = (flags.target ?? 'utools') as Target
       if (!['utools', 'electron', 'web'].includes(target)) throw new Error(`--target 只能是 utools / electron / web`)
       await pack({
-        dir: args[0], target, out: flags.out, name: flags.name, packageName: flags.package, productName: flags.product,
+        dir: args.length > 1 ? args : args[0], target, appVersion: flags['app-version'],
+        install: flags['allow-install'] || flags['max-plugins'] ? { enabled: true, ...(flags['max-plugins'] ? { max: Number(flags['max-plugins']) } : {}) } : undefined, out: flags.out, name: flags.name, packageName: flags.package, productName: flags.product,
         compat: flags.compat, hostName: flags['host-name'], hostVersion: flags['host-version'],
         mockPlatform: flags['mock-platform'], mockVersion: flags['mock-version'],
       })

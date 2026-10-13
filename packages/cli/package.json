@@ -36,7 +36,8 @@
     "@whatevertools/db-file": "workspace:*",
     "@whatevertools/electron": "workspace:*",
     "@whatevertools/web": "workspace:*",
-    "esbuild": "^0.25.0"
+    "esbuild": "^0.25.0",
+    "@whatevertools/upx": "workspace:*"
   },
   "peerDependencies": {
     "electron": ">=30"

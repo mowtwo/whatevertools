@@ -25,7 +25,8 @@
   "dependencies": {
     "@whatevertools/core": "workspace:*",
     "@whatevertools/api": "workspace:*",
-    "@whatevertools/db-file": "workspace:*"
+    "@whatevertools/db-file": "workspace:*",
+    "@whatevertools/upx": "workspace:*"
   },
   "optionalDependencies": {
     "sharp": "^0.34.0"

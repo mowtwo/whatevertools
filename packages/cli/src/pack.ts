@@ -1,7 +1,8 @@
 // 打包：utools（原样输出，零运行时）/ electron（独立应用）/ web（静态站点）
 import fs from 'node:fs'
 import path from 'node:path'
-import { loadManifest, nativeManifestLoader, RUNTIME_VERSION, supportsTarget, type PluginManifest } from '@whatevertools/core'
+import os from 'node:os'
+import { loadManifest, nativeManifestLoader, RUNTIME_VERSION, supportsTarget, type InstallPolicy, type PluginManifest } from '@whatevertools/core'
 import { utoolsManifestLoader } from '@whatevertools/compat-utools'
 import { printReport, scanUsage, walk } from './report'
 import { buildWebRuntime, bundlePreload, findPreloads, injectWebLoader } from './web'
@@ -9,7 +10,8 @@ import { buildWebRuntime, bundlePreload, findPreloads, injectWebLoader } from '.
 export type Target = 'utools' | 'electron' | 'web'
 
 export interface PackOptions {
-  dir: string
+  /** 插件目录或插件包（.upx / .asar / .zip）；可以给多个：electron 打成一个带多个插件的启动器，web 打成一个带入口页的站点 */
+  dir: string | string[]
   target: Target
   out?: string
   /** 原生 API 注入名 + 底座名 + 包名（electron / web），默认 whatevertools */
@@ -26,6 +28,10 @@ export interface PackOptions {
   /** 伪装平台（给旧插件的 getAppName / getAppVersion） */
   mockPlatform?: string
   mockVersion?: string
+  /** 应用版本（多个插件时默认 1.0.0，单个插件默认插件版本） */
+  appVersion?: string
+  /** electron：打包后的应用里能不能再动态安装插件包（单插件默认不能，多插件默认不能） */
+  install?: InstallPolicy
   log?: (s: string) => void
 }
 
@@ -65,33 +71,83 @@ function compatLayers(spec = 'utools') {
   })
 }
 
-export async function pack(o: PackOptions) {
-  const log = o.log ?? console.log
-  const dir = path.resolve(o.dir)
+interface ResolvedPlugin {
+  dir: string
+  manifest: PluginManifest
+  manifestFiles: Record<string, any>
+  cleanup(): void
+}
+
+const PACKAGE_EXT = /\.(upx|upxs|asar|zip)$/i
+
+/** 插件目录原样用；插件包先解到临时目录 */
+async function resolveInput(input: string): Promise<ResolvedPlugin> {
+  let dir = path.resolve(input)
+  let cleanup = () => {}
+  if (fs.statSync(dir).isFile()) {
+    if (!PACKAGE_EXT.test(dir)) throw new Error(`不认识的插件包：${input}（支持目录、.upx、.asar、.zip）`)
+    const { extractPackage } = require('@whatevertools/upx/node') as typeof import('@whatevertools/upx/node')
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'wt-pack-'))
+    await extractPackage(dir, tmp)
+    dir = tmp
+    cleanup = () => fs.rmSync(tmp, { recursive: true, force: true })
+  }
   const manifestFiles: Record<string, unknown> = {}
   for (const f of ['plugin.json', 'whatevertools.json', 'package.json']) {
     const v = readJson(path.join(dir, f)) ?? (f !== 'plugin.json' ? readJson(path.join(dir, '..', f)) : undefined)
     if (v !== undefined) manifestFiles[f] = v
   }
-  const manifest = loadManifest([nativeManifestLoader, utoolsManifestLoader], { dir, files: manifestFiles })
-  if (!supportsTarget(manifest, o.target)) throw new Error(`${manifest.name} 声明只支持 ${manifest.targets!.join(' / ')}，不能打包成 ${o.target}（见 whatevertools.json 的 targets）`)
-  const name = o.name ?? 'whatevertools'
-  if (!/^[A-Za-z_$][\w$]*$/.test(name)) throw new Error(`--name 必须是合法的 JS 标识符（会作为全局变量名注入）：${name}`)
-  const pkgName = safeName(o.packageName ?? (o.name ? `${o.name}-${manifest.id}` : manifest.id))
-  const product = o.productName ?? manifest.name
-  const out = path.resolve(o.out ?? path.join(dir, '..', 'release', o.target))
-  const usage = scanUsage(dir, name)
-  log(`插件 ${manifest.name}（${manifest.id}@${manifest.version}）→ ${o.target}`)
-  log(printReport(usage, o.target))
-  if (o.target === 'utools') return packUtools(dir, out, manifest, log)
-  const identity = {
-    runtimeName: name,
-    host: { name: o.hostName ?? product, version: o.hostVersion ?? manifest.version },
-    mock: { platform: { name: o.mockPlatform ?? 'uTools', version: o.mockVersion ?? '7.0.0' }, runtime: { name, version: RUNTIME_VERSION } },
+  try {
+    return { dir, manifest: loadManifest([nativeManifestLoader, utoolsManifestLoader], { dir, files: manifestFiles }), manifestFiles, cleanup }
+  } catch (e) {
+    cleanup()
+    throw e
   }
-  const compat = compatLayers(o.compat)
-  if (o.target === 'electron') return packElectron({ dir, out: path.join(out, pkgName), manifest, name, pkgName, product, identity, compat, log })
-  return packWeb({ dir, out: path.join(out, pkgName), manifest, name, pkgName, product, identity, compat, manifestFiles, log })
+}
+
+export async function pack(o: PackOptions) {
+  const log = o.log ?? console.log
+  const inputs = Array.isArray(o.dir) ? o.dir : [o.dir]
+  if (!inputs.length) throw new Error('没有要打包的插件')
+  const plugins: ResolvedPlugin[] = []
+  try {
+    for (const i of inputs) plugins.push(await resolveInput(i))
+    const ids = new Set<string>()
+    for (const p of plugins) {
+      const m = p.manifest
+      if (!supportsTarget(m, o.target)) throw new Error(`${m.name} 声明只支持 ${m.targets!.join(' / ')}，不能打包成 ${o.target}（见 whatevertools.json 的 targets）`)
+      if (ids.has(m.id)) throw new Error(`插件 id 重复：${m.id}`)
+      ids.add(m.id)
+    }
+    const multi = plugins.length > 1
+    if (multi && o.target === 'utools') throw new Error('uTools 一个包只能有一个插件，请分别打包')
+    if (multi && !o.productName) throw new Error('多个插件打包成一个应用时需要 --product <应用名>')
+    const first = plugins[0]
+    const name = o.name ?? 'whatevertools'
+    if (!/^[A-Za-z_$][\w$]*$/.test(name)) throw new Error(`--name 必须是合法的 JS 标识符（会作为全局变量名注入）：${name}`)
+    const pkgName = safeName(o.packageName ?? (multi ? o.productName! : o.name ? `${o.name}-${first.manifest.id}` : first.manifest.id))
+    if (multi && !o.packageName && pkgName === 'app') log(`注意：应用名「${o.productName}」不能直接当包名，输出目录和包名用了 app，可以用 --package 指定`)
+    const product = o.productName ?? first.manifest.name
+    const version = o.appVersion ?? (multi ? '1.0.0' : first.manifest.version)
+    const isPackageInput = inputs.some((i) => fs.statSync(i).isFile())
+    const out = path.resolve(o.out ?? (isPackageInput ? path.join(process.cwd(), 'release', o.target) : path.join(path.resolve(inputs[0]), '..', 'release', o.target)))
+    for (const p of plugins) {
+      log(`插件 ${p.manifest.name}（${p.manifest.id}@${p.manifest.version}）→ ${o.target}`)
+      log(printReport(scanUsage(p.dir, name), o.target))
+    }
+    if (o.target === 'utools') return await packUtools(first.dir, out, first.manifest, log)
+    const identity = {
+      runtimeName: name,
+      host: { name: o.hostName ?? product, version: o.hostVersion ?? version },
+      mock: { platform: { name: o.mockPlatform ?? 'uTools', version: o.mockVersion ?? '7.0.0' }, runtime: { name, version: RUNTIME_VERSION } },
+    }
+    const compat = compatLayers(o.compat)
+    if (o.target === 'electron') return await packElectron({ plugins, out: path.join(out, pkgName), name, pkgName, product, version, identity, compat, install: o.install, log })
+    if (!multi) return await packWeb({ ...first, out: path.join(out, pkgName), name, pkgName, product, identity, compat, log })
+    return await packWebMulti({ plugins, out: path.join(out, pkgName), name, pkgName, product, identity, compat, log })
+  } finally {
+    for (const p of plugins) p.cleanup()
+  }
 }
 
 // ---------- utools ----------
@@ -117,9 +173,7 @@ function packUtools(dir: string, out: string, manifest: PluginManifest, log: (s:
 // ---------- electron ----------
 
 interface BuildCtx {
-  dir: string
   out: string
-  manifest: PluginManifest
   name: string
   pkgName: string
   product: string
@@ -128,8 +182,14 @@ interface BuildCtx {
   log: (s: string) => void
 }
 
+interface ElectronCtx extends BuildCtx {
+  plugins: Array<{ dir: string; manifest: PluginManifest }>
+  version: string
+  install?: InstallPolicy
+}
+
 /** 运行时需要的包（electron 目标），按依赖顺序 */
-const ELECTRON_RUNTIME = ['core', 'api', 'compat-utools', 'db-file', 'electron']
+const ELECTRON_RUNTIME = ['core', 'upx', 'api', 'compat-utools', 'db-file', 'electron']
 
 function resolvePkg(name: string): string | null {
   try {
@@ -160,13 +220,19 @@ function copyThirdPartyDeps(dirs: string[], nodeModules: string) {
   }
 }
 
-function packElectron(c: BuildCtx) {
+function packElectron(c: ElectronCtx) {
   fs.rmSync(c.out, { recursive: true, force: true })
-  copyDir(c.dir, path.join(c.out, 'plugin'), (rel) => !rel.endsWith('.map'))
-  // 固定插件身份（目录名变成了 plugin，id 不能再从目录名推断）
-  const fj = path.join(c.out, 'plugin', 'whatevertools.json')
-  const prev = readJson(fj) ?? {}
-  fs.writeFileSync(fj, JSON.stringify({ ...prev, id: c.manifest.id, name: c.manifest.name, version: c.manifest.version }, null, 2))
+  const multi = c.plugins.length > 1
+  const first = c.plugins[0].manifest
+  // 单个插件放 plugin/，多个放 plugins/<id>/
+  const rels = c.plugins.map((p) => (multi ? `plugins/${p.manifest.id}` : 'plugin'))
+  c.plugins.forEach((p, i) => {
+    copyDir(p.dir, path.join(c.out, rels[i]), (rel) => !rel.endsWith('.map'))
+    // 固定插件身份（目录名变了，id 不能再从目录名推断）
+    const fj = path.join(c.out, rels[i], 'whatevertools.json')
+    const prev = readJson(fj) ?? {}
+    fs.writeFileSync(fj, JSON.stringify({ ...prev, id: p.manifest.id, name: p.manifest.name, version: p.manifest.version }, null, 2))
+  })
   // 运行时包：只拷 dist / assets / package.json；它们的第三方依赖（pinyin-pro 等）整包拷过去
   const runtimeFile = (rel: string) => rel === 'package.json' || /^(dist|assets)(\/|$)/.test(rel)
   for (const p of ELECTRON_RUNTIME) copyDir(pkgDir(p), path.join(c.out, 'node_modules', '@whatevertools', p), runtimeFile)
@@ -202,16 +268,16 @@ function packElectron(c: BuildCtx) {
   fs.writeFileSync(path.join(c.out, 'package.json'), JSON.stringify({
     name: c.pkgName,
     productName: c.product,
-    version: c.manifest.version,
-    description: c.manifest.description,
+    version: c.version,
+    description: multi ? `${c.product}（${c.plugins.map((p) => p.manifest.name).join('、')}）` : first.description,
     private: true,
     main: 'main.js',
     scripts: { start: 'electron .', dist: 'electron-builder' },
     devDependencies: { electron: electronVersion, 'electron-builder': '^26.0.0' },
     build: {
-      appId: c.manifest.standalone.appId ?? `app.${c.name}.${c.manifest.id}`.replace(/[^a-zA-Z0-9.-]/g, '-'),
+      appId: (!multi && first.standalone.appId) || `app.${c.name}.${multi ? c.pkgName : first.id}`.replace(/[^a-zA-Z0-9.-]/g, '-'),
       productName: c.product,
-      files: ['main.js', 'plugin/**', 'node_modules/**', 'package.json'],
+      files: ['main.js', multi ? 'plugins/**' : 'plugin/**', 'node_modules/**', 'package.json'],
       asarUnpack: ['node_modules/sharp/**', 'node_modules/@img/**'],
       mac: { category: 'public.app-category.productivity' },
     },
@@ -221,8 +287,9 @@ const path = require('node:path')
 const { runApp } = require('@whatevertools/electron')
 
 runApp({
-  mode: 'standalone',
-  plugins: [path.join(__dirname, 'plugin')],
+  mode: ${JSON.stringify(multi ? 'launcher' : 'standalone')},
+  plugins: ${JSON.stringify(rels)}.map((p) => path.join(__dirname, p)),
+  install: ${JSON.stringify(c.install ?? { enabled: false })},
   apiName: ${JSON.stringify(c.name)},
   compat: ${JSON.stringify(c.compat.map((x) => ({ module: '@whatevertools/compat-utools', name: x.name })))},
   identity: ${JSON.stringify(c.identity)},
@@ -242,6 +309,8 @@ runApp({
 // ---------- web ----------
 
 interface WebCtx extends BuildCtx {
+  dir: string
+  manifest: PluginManifest
   manifestFiles: Record<string, any>
 }
 
@@ -284,5 +353,54 @@ async function packWeb(c: WebCtx) {
   fs.writeFileSync(path.join(c.out, 'package.json'), JSON.stringify({ name: c.pkgName, version: c.manifest.version, private: true, description: `${c.product}（web）` }, null, 2))
   c.log(`已输出到 ${c.out}`)
   c.log(`  预览：npx serve "${c.out}"（需要通过 http 访问，不能直接双击 html）`)
+  return { out: c.out }
+}
+
+/** 多个插件打成一个站点：每个插件一个子目录（各自独立的虚拟文件系统和数据库），根目录是入口页 */
+async function packWebMulti(c: BuildCtx & { plugins: ResolvedPlugin[] }) {
+  fs.rmSync(c.out, { recursive: true, force: true })
+  for (const p of c.plugins) {
+    await packWeb({ ...c, dir: p.dir, manifest: p.manifest, manifestFiles: p.manifestFiles, out: path.join(c.out, p.manifest.id), log: () => {} })
+  }
+  const esc = (v: string) => v.replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[ch]!)
+  const cards = c.plugins.map((p) => {
+    const m = p.manifest
+    const href = `./${encodeURIComponent(m.id)}/${m.main}`
+    const logo = m.logo ? `<img src="./${encodeURIComponent(m.id)}/${esc(m.logo)}" alt="">` : '<div class="ph"></div>'
+    return `<a class="card" href="${esc(href)}">${logo}<div><b>${esc(m.name)}</b><span>${esc(m.description || m.id)}</span></div></a>`
+  }).join('\n      ')
+  fs.writeFileSync(path.join(c.out, 'index.html'), `<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${esc(c.product)}</title>
+<style>
+  :root { color-scheme: light dark; --bg: #f6f6f4; --card: #fff; --fg: #1d1d1f; --muted: #6b6b70; --line: #e4e4e0; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #151517; --card: #1f1f22; --fg: #f2f2f2; --muted: #9a9aa0; --line: #2c2c30; } }
+  body { margin: 0; font: 15px/1.5 system-ui, -apple-system, "PingFang SC", sans-serif; background: var(--bg); color: var(--fg); }
+  main { max-width: 880px; margin: 0 auto; padding: 48px 16px; }
+  h1 { font-size: 24px; margin: 0 0 24px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+  .card { display: flex; gap: 12px; align-items: center; padding: 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); color: inherit; text-decoration: none; }
+  .card:hover { border-color: var(--muted); }
+  .card img, .card .ph { width: 44px; height: 44px; border-radius: 10px; flex: none; object-fit: cover; background: var(--line); }
+  .card b { display: block; }
+  .card span { display: block; color: var(--muted); font-size: 13px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+</style>
+</head>
+<body>
+  <main>
+    <h1>${esc(c.product)}</h1>
+    <div class="grid">
+      ${cards}
+    </div>
+  </main>
+</body>
+</html>
+`)
+  fs.writeFileSync(path.join(c.out, 'package.json'), JSON.stringify({ name: c.pkgName, version: '1.0.0', private: true, description: `${c.product}（web，${c.plugins.length} 个插件）` }, null, 2))
+  c.log(`已输出到 ${c.out}（${c.plugins.map((p) => p.manifest.id).join('、')}）`)
+  c.log(`  预览：npx serve "${c.out}"`)
   return { out: c.out }
 }

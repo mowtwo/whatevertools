@@ -473,7 +473,7 @@ export class WindowShell implements Shell {
 
   // ---------- 插件管理（设置页） ----------
 
-  private pluginManager: { list(): Array<{ id: string; name: string; dir: string }>; add(): Promise<string | null>; remove(id: string): void } | null = null
+  private pluginManager: { list(): Array<{ id: string; name: string; dir: string; installed?: boolean }>; add(): Promise<string | null>; install?(): Promise<string | null>; remove(id: string): void } | null = null
 
   setPluginManager(m: NonNullable<WindowShell['pluginManager']>) {
     this.pluginManager = m
@@ -521,6 +521,7 @@ export class WindowShell implements Shell {
     })
     ipcMain.handle('whatevertools-settings:plugins', (e) => (own(e) ? this.pluginManager?.list() ?? [] : []))
     ipcMain.handle('whatevertools-settings:plugin-add', (e) => (own(e) && this.pluginManager ? this.pluginManager.add() : null))
+    ipcMain.handle('whatevertools-settings:plugin-install', (e) => (own(e) && this.pluginManager?.install ? this.pluginManager.install() : null))
     ipcMain.handle('whatevertools-settings:plugin-remove', (e, id: string) => {
       if (own(e)) this.pluginManager?.remove(id)
     })
