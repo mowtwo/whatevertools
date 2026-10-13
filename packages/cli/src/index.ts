@@ -76,7 +76,7 @@ async function main() {
     case 'doctor': {
       const file = findConfig(cwd, flags.config)
       const config = file ? await loadConfig(file) : undefined
-      const binary = flags.binary === 'true' || !!config?.electron?.binary
+      const binary = flags.binary === 'true' || config?.electron?.binary === true
       const r = doctor({ config, root: file ? path.dirname(file) : cwd, platforms: platformsOf(flags.platform), binary })
       if (json) stdoutWrite(JSON.stringify({ config: file, ...r }) + '\n')
       else console.log(printDoctor(r))

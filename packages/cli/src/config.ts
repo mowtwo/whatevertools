@@ -57,7 +57,7 @@ export interface WhateverToolsConfig {
   electron?: {
     /** 打包后的应用能不能再动态安装插件包 */
     install?: InstallPolicy
-    /** 出安装包（wt build --binary 或这里设 true） */
+    /** 安装包：true 表示 wt build 时总是出安装包；写成对象是安装包的参数，出不出由 --binary 决定 */
     binary?: boolean | ElectronBinaryConfig
     sign?: SigningConfig
   }

@@ -1,6 +1,7 @@
 // Electron 安装包：在 wt pack 产出的应用目录上调用 electron-builder（项目里自己装：npm i -D electron-builder）。
 // 签名、公证凭据只从环境变量读（CSC_LINK、APPLE_API_KEY…），见 signing.ts。
 import fs from 'node:fs'
+import os from 'node:os'
 import path from 'node:path'
 import type { Arch, ElectronBinaryConfig, Platform, SigningConfig } from './config'
 import { signingStatus, type SigningStatus } from './signing'
@@ -141,7 +142,11 @@ export async function buildBinary(o: BinaryOptions): Promise<BinaryResult[]> {
     for (const n of s.notes) log(`注意（${p}）：${n}`)
     statuses[p] = s
   }
-  const config = builderConfig(o.appDir, o, statuses)
+  // 在系统临时目录里构建：应用目录往往在插件项目里面，electron-builder 会顺着找到外层项目的 lockfile，
+  // 把整个项目的依赖当成应用依赖打进去
+  const stage = fs.mkdtempSync(path.join(os.tmpdir(), 'wt-binary-'))
+  fs.cpSync(o.appDir, stage, { recursive: true, filter: (src) => path.relative(o.appDir, src).split(path.sep)[0] !== 'dist' })
+  const config = builderConfig(stage, o, statuses)
   const eb = require(ebPath)
   const results: BinaryResult[] = []
   const env = { ...process.env }
@@ -151,7 +156,7 @@ export async function buildBinary(o: BinaryOptions): Promise<BinaryResult[]> {
     for (const p of o.platforms) {
       const platform = p === 'mac' ? eb.Platform.MAC : p === 'win' ? eb.Platform.WINDOWS : eb.Platform.LINUX
       log(`出安装包：${p}（${statuses[p]!.method}${statuses[p]!.notarize ? '，公证' : ''}）`)
-      const artifacts: string[] = await eb.build({ projectDir: o.appDir, targets: platform.createTarget(), config, publish: 'never' })
+      const artifacts: string[] = await eb.build({ projectDir: stage, targets: platform.createTarget(), config, publish: 'never' })
       fs.mkdirSync(o.out, { recursive: true })
       const moved = artifacts.filter((a) => !a.endsWith('.blockmap') && fs.existsSync(a)).map((a) => {
         const dst = path.join(o.out, path.basename(a))
@@ -161,6 +166,7 @@ export async function buildBinary(o: BinaryOptions): Promise<BinaryResult[]> {
       results.push({ platform: p, artifacts: moved, signing: statuses[p]! })
     }
   } finally {
+    fs.rmSync(stage, { recursive: true, force: true })
     process.env.CSC_IDENTITY_AUTO_DISCOVERY = env.CSC_IDENTITY_AUTO_DISCOVERY
     if (env.CSC_IDENTITY_AUTO_DISCOVERY === undefined) delete process.env.CSC_IDENTITY_AUTO_DISCOVERY
   }

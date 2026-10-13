@@ -38,7 +38,8 @@ export async function build(o: BuildOptions): Promise<BuildTargetResult[]> {
     })
     const res: BuildTargetResult = { target, out: r.out }
     const binCfg = c.electron?.binary
-    if (target === 'electron' && (o.binary ?? !!binCfg)) {
+    // 出安装包要显式开启：--binary 或配置 electron.binary: true（写成对象只是安装包的参数）
+    if (target === 'electron' && (o.binary ?? binCfg === true)) {
       res.binaries = await buildBinary({
         appDir: r.out, out: path.join(out, 'binaries'), platforms: o.platforms ?? [hostPlatform()],
         binary: typeof binCfg === 'object' ? binCfg : undefined, sign: c.electron?.sign, log,
