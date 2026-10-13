@@ -1,4 +1,10 @@
-// 编程接口（给 @whatevertools/vite、构建脚本用）；命令行入口在 index.ts
+// 编程接口（给 @whatevertools/vite、构建脚本、配置文件用）；命令行入口在 index.ts
 export { pack, type PackOptions, type Target } from './pack'
 export { printReport, scanUsage } from './report'
 export { buildWebRuntime, bundlePreload, findPreloads, injectWebLoader, shimPlugin, type WebLoaderOptions } from './web'
+export { defineConfig, loadConfig, findConfig, resolveTargets, ConfigError, type WhateverToolsConfig, type ElectronBinaryConfig, type SigningConfig, type Platform, type Arch } from './config'
+export { build, type BuildOptions, type BuildTargetResult } from './build'
+export { buildBinary, builderConfig, type BinaryOptions, type BinaryResult } from './binary'
+export { doctor, printDoctor, type DoctorReport, type DoctorCheck } from './doctor'
+export { signingStatus, type SigningStatus } from './signing'
+export { init } from './init'

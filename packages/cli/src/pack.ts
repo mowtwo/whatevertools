@@ -265,10 +265,20 @@ function packElectron(c: ElectronCtx) {
       return undefined
     }
   })() ?? '43.7.9'
+  // node_modules 里拷进去的包都写进 dependencies：electron-builder 只打包声明过的依赖
+  const dependencies: Record<string, string> = {}
+  const nm = path.join(c.out, 'node_modules')
+  for (const d of fs.existsSync(nm) ? fs.readdirSync(nm) : []) {
+    for (const name of d.startsWith('@') ? fs.readdirSync(path.join(nm, d)).map((x) => `${d}/${x}`) : [d]) {
+      const v = readJson(path.join(nm, name, 'package.json'))?.version
+      if (v) dependencies[name] = v
+    }
+  }
   fs.writeFileSync(path.join(c.out, 'package.json'), JSON.stringify({
     name: c.pkgName,
     productName: c.product,
     version: c.version,
+    dependencies,
     description: multi ? `${c.product}（${c.plugins.map((p) => p.manifest.name).join('、')}）` : first.description,
     private: true,
     main: 'main.js',
