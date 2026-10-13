@@ -1,0 +1,23 @@
+{
+  "name": "@whatevertools/shim-electron",
+  "version": "0.1.0",
+  "description": "Electron renderer module shim (ipcRenderer, clipboard, nativeImage, shell, webUtils, webFrame) built on whatevertools capabilities, for platforms without Electron",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mowtwo/whatevertools.git",
+    "directory": "packages/shim-electron"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "@whatevertools/core": "workspace:*",
+    "@whatevertools/api": "workspace:*"
+  }
+}

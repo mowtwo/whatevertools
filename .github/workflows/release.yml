@@ -1,0 +1,29 @@
+# 推送 v* 标签时发布全部 @whatevertools/* 包。
+# 走 npm 可信发布（OIDC），不需要 NPM_TOKEN；每个包要先在 npm 上配置好可信发布者：
+#   npm trust github <包名> --repo mowtwo/whatevertools --file release.yml --allow-publish
+# 已经发布过的版本会被 pnpm 跳过，所以只需改要发的包的 version 再打标签。
+name: release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm test
+      - run: pnpm -r publish --access public --no-git-checks

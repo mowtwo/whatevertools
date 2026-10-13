@@ -1,0 +1,38 @@
+{
+  "name": "@whatevertools/electron",
+  "version": "0.1.0",
+  "description": "Electron runtime for whatevertools: main-process host, services and the preload bridge that injects the plugin API",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mowtwo/whatevertools.git",
+    "directory": "packages/electron"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "dist/main/index.js",
+  "types": "dist/main/index.d.ts",
+  "files": [
+    "dist",
+    "assets"
+  ],
+  "exports": {
+    ".": "./dist/main/index.js",
+    "./preload": "./dist/preload/index.js"
+  },
+  "dependencies": {
+    "@whatevertools/core": "workspace:*",
+    "@whatevertools/api": "workspace:*",
+    "@whatevertools/db-file": "workspace:*"
+  },
+  "optionalDependencies": {
+    "sharp": "^0.34.0"
+  },
+  "peerDependencies": {
+    "electron": ">=30"
+  },
+  "devDependencies": {
+    "@whatevertools/compat-utools": "workspace:*"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "main": "index.html",
+  "logo": "logo.png",
+  "preload": "preload.js",
+  "features": [
+    {
+      "code": "probe",
+      "description": "导出 utools 运行时 API 结构",
+      "cmds": ["whatevertools探针"]
+    }
+  ]
+}

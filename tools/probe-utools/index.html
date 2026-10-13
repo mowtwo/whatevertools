@@ -1,0 +1,15 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>probe</title></head>
+<body style="font:14px system-ui;padding:16px">
+<h3>whatevertools 探针</h3>
+<p id="s">运行中…</p>
+<script>
+  const s = document.getElementById('s')
+  const show = (t) => (s.textContent = t)
+  if (new URLSearchParams(location.search).get('child')) {
+    show('child window')
+  } else {
+    window.probe ? window.probe.run().then(show, (e) => show('失败：' + e.message)) : show('preload 未加载')
+  }
+</script>
+</body></html>

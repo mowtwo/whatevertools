@@ -1,0 +1,301 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "uTools plugin.json",
+  "description": "uTools 插件配置（与官方文档一致，仅用于编辑器提示，不影响打包和发布）",
+  "type": "object",
+  "required": [
+    "main",
+    "logo",
+    "features"
+  ],
+  "properties": {
+    "main": {
+      "type": "string",
+      "pattern": "\\.html?$",
+      "description": "插件入口 HTML（相对路径）"
+    },
+    "logo": {
+      "type": "string",
+      "description": "插件图标（相对路径）"
+    },
+    "preload": {
+      "type": "string",
+      "pattern": "\\.js$",
+      "description": "preload 脚本（相对路径，CommonJS）"
+    },
+    "pluginSetting": {
+      "type": "object",
+      "properties": {
+        "single": {
+          "type": "boolean",
+          "default": true
+        },
+        "height": {
+          "type": "number",
+          "default": 544
+        }
+      },
+      "additionalProperties": false
+    },
+    "development": {
+      "type": "object",
+      "description": "开发模式配置",
+      "properties": {
+        "main": {
+          "type": "string"
+        },
+        "preload": {
+          "type": "string"
+        },
+        "logo": {
+          "type": "string"
+        }
+      }
+    },
+    "features": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/feature"
+      }
+    },
+    "tools": {
+      "type": "object",
+      "description": "AI Agent / MCP 工具声明；每个工具都要用 registerTool 注册同名处理函数",
+      "additionalProperties": {
+        "$ref": "#/definitions/tool"
+      }
+    }
+  },
+  "definitions": {
+    "platform": {
+      "enum": [
+        "win32",
+        "darwin",
+        "linux"
+      ]
+    },
+    "feature": {
+      "type": "object",
+      "required": [
+        "code",
+        "cmds"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "explain": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "string"
+        },
+        "platform": {
+          "oneOf": [
+            {
+              "$ref": "#/definitions/platform"
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/platform"
+              }
+            }
+          ]
+        },
+        "mainPush": {
+          "type": "boolean"
+        },
+        "mainHide": {
+          "type": "boolean"
+        },
+        "cmds": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "oneOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80,
+                "description": "功能指令：用户在搜索框输入并进入"
+              },
+              {
+                "$ref": "#/definitions/regexCmd"
+              },
+              {
+                "$ref": "#/definitions/overCmd"
+              },
+              {
+                "$ref": "#/definitions/imgCmd"
+              },
+              {
+                "$ref": "#/definitions/filesCmd"
+              },
+              {
+                "$ref": "#/definitions/windowCmd"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "regexCmd": {
+      "type": "object",
+      "required": [
+        "type",
+        "label",
+        "match"
+      ],
+      "properties": {
+        "type": {
+          "const": "regex"
+        },
+        "label": {
+          "type": "string"
+        },
+        "match": {
+          "type": "string",
+          "description": "正则字面量字符串，如 \"/^https?:\\\\/\\\\/\\\\S+$/i\""
+        },
+        "minLength": {
+          "type": "integer"
+        },
+        "maxLength": {
+          "type": "integer"
+        }
+      }
+    },
+    "overCmd": {
+      "type": "object",
+      "required": [
+        "type",
+        "label"
+      ],
+      "properties": {
+        "type": {
+          "const": "over"
+        },
+        "label": {
+          "type": "string"
+        },
+        "exclude": {
+          "type": "string"
+        },
+        "minLength": {
+          "type": "integer"
+        },
+        "maxLength": {
+          "type": "integer"
+        }
+      }
+    },
+    "imgCmd": {
+      "type": "object",
+      "required": [
+        "type",
+        "label"
+      ],
+      "properties": {
+        "type": {
+          "const": "img"
+        },
+        "label": {
+          "type": "string"
+        }
+      }
+    },
+    "filesCmd": {
+      "type": "object",
+      "required": [
+        "type",
+        "label"
+      ],
+      "properties": {
+        "type": {
+          "const": "files"
+        },
+        "label": {
+          "type": "string"
+        },
+        "fileType": {
+          "enum": [
+            "file",
+            "directory"
+          ]
+        },
+        "extensions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "match": {
+          "type": "string"
+        },
+        "minLength": {
+          "type": "integer"
+        },
+        "maxLength": {
+          "type": "integer"
+        }
+      }
+    },
+    "windowCmd": {
+      "type": "object",
+      "required": [
+        "type",
+        "label",
+        "match"
+      ],
+      "properties": {
+        "type": {
+          "const": "window"
+        },
+        "label": {
+          "type": "string"
+        },
+        "match": {
+          "type": "object",
+          "required": [
+            "app"
+          ],
+          "properties": {
+            "app": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "title": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "tool": {
+      "type": "object",
+      "required": [
+        "description",
+        "inputSchema"
+      ],
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "inputSchema": {
+          "type": "object"
+        },
+        "outputSchema": {
+          "type": "object"
+        }
+      }
+    }
+  }
+}

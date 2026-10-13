@@ -1,0 +1,160 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' file: data:; style-src 'unsafe-inline'; script-src 'unsafe-inline'">
+<style>
+  :root { --bg: #ffffff; --fg: #1f2328; --muted: #6e7781; --line: #e5e7eb; --hover: #f3f4f6; --accent: #2563eb; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #1f1f22; --fg: #e6e6e6; --muted: #9ca3af; --line: #2f2f33; --hover: #2a2a2e; --accent: #60a5fa; } }
+  html, body { margin: 0; background: var(--bg); color: var(--fg); font: 14px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; overflow: hidden; }
+  header { height: 56px; display: flex; align-items: center; gap: 10px; padding: 0 14px; border-bottom: 1px solid var(--line); -webkit-app-region: drag; }
+  header img { width: 26px; height: 26px; border-radius: 6px; }
+  header .tag { font-size: 12px; color: var(--muted); white-space: nowrap; max-width: 160px; overflow: hidden; text-overflow: ellipsis; }
+  input { flex: 1; height: 36px; border: 0; outline: 0; background: transparent; color: var(--fg); font-size: 20px; -webkit-app-region: no-drag; }
+  input::placeholder { color: var(--muted); }
+  button.icon { -webkit-app-region: no-drag; border: 0; background: transparent; color: var(--muted); font-size: 16px; cursor: pointer; padding: 6px; border-radius: 6px; }
+  button.icon:hover { background: var(--hover); }
+  ul { list-style: none; margin: 0; padding: 4px 0; }
+  li { height: 48px; display: flex; align-items: center; gap: 12px; padding: 0 16px; cursor: default; }
+  li.sel { background: var(--hover); }
+  li img { width: 28px; height: 28px; border-radius: 6px; }
+  li .t { font-size: 15px; }
+  li .d { font-size: 12px; color: var(--muted); }
+  li .k { margin-left: auto; font-size: 12px; color: var(--muted); }
+  .empty { padding: 14px 16px; color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+<header>
+  <img id="logo" hidden>
+  <span class="tag" id="tag" hidden></span>
+  <input id="q" autofocus spellcheck="false">
+  <button class="icon" id="detach" title="分离为独立窗口" hidden>⧉</button>
+  <button class="icon" id="gear" title="设置">⚙</button>
+</header>
+<ul id="list"></ul>
+<script>
+  const $ = (id) => document.getElementById(id)
+  const q = $('q'), list = $('list')
+  let state = { mode: 'launcher', active: null }
+  let results = [], sel = 0
+  const ROW = 48, MAX = 8
+  function render() {
+    const a = state.active
+    $('logo').hidden = !a
+    $('tag').hidden = !a
+    $('detach').hidden = !a || state.mode !== 'launcher'
+    if (a) {
+      $('logo').src = a.logo || ''
+      $('tag').textContent = a.name
+      q.placeholder = a.panelInput ? a.panelInput.placeholder || '' : ''
+      q.style.visibility = a.panelInput || state.mode === 'launcher' ? 'visible' : 'hidden'
+      list.innerHTML = ''
+      return
+    }
+    if (!state.pick) q.placeholder = state.placeholder || '搜索插件功能，或粘贴文字 / 图片 / 文件'
+    list.innerHTML = ''
+    if (q.value && !results.length) list.innerHTML = '<div class="empty">没有匹配的功能</div>'
+    results.slice(0, 30).forEach((r, i) => {
+      const li = document.createElement('li')
+      if (i === sel) li.className = 'sel'
+      li.innerHTML = `<img src="${r.logo || ''}"><div><div class="t"></div><div class="d"></div></div><span class="k">${i < 9 ? '⌘' + (i + 1) : ''}</span>`
+      li.querySelector('.t').textContent = r.label
+      li.querySelector('.d').textContent = r.pluginName + (r.type !== 'text' ? ' · ' + r.type : '')
+      li.onmousemove = () => { if (sel !== i) { sel = i; render() } }
+      li.onclick = () => window.shell.choose(i)
+      list.appendChild(li)
+    })
+    const rows = q.value || state.pick || (state.windowMatches && results.length) ? Math.max(1, Math.min(MAX, results.length)) : 0
+    window.shell.height(56 + rows * ROW + (rows ? 8 : 0))
+  }
+  window.shell.onState((s) => {
+    const was = state.active && state.active.pluginId
+    state = s
+    // 候选面板（超级面板等）：直接显示给定结果
+    if (s.pick) {
+      results = s.pick.results; sel = 0
+      q.value = ''
+      q.placeholder = s.pick.title || ''
+      render()
+      q.focus()
+      return
+    }
+    // 打开主面板时，按前台窗口匹配到的功能（window 入口）先列出来
+    if (s.windowMatches && !q.value) {
+      results = s.windowMatches; sel = 0
+      render()
+      window.shell.height(56 + Math.min(MAX, results.length) * ROW + 8)
+      return
+    }
+    if (s.prefill !== undefined) {
+      q.value = s.prefill
+      q.dispatchEvent(new Event('input'))
+    }
+    if (s.active) {
+      if (!was || was !== s.active.pluginId) q.value = s.active.panelInput ? s.active.panelInput.value || '' : ''
+      else if (s.active.panelInput && s.active.panelInput.value !== undefined && s.active.panelInput.value !== q.value) q.value = s.active.panelInput.value
+      if (s.focusInput) { q.focus(); if (s.selectInput) q.select() }
+      if (s.blurInput) q.blur()
+    } else {
+      if (s.reset) { q.value = ''; results = []; sel = 0 }
+      q.focus()
+    }
+    render()
+  })
+  let seq = 0
+  q.addEventListener('input', async () => {
+    if (state.active) return window.shell.input(q.value)
+    if (state.pick) return
+    const my = ++seq
+    const r = await window.shell.query(q.value)
+    if (my !== seq) return
+    results = r; sel = 0; render()
+  })
+  q.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') { e.preventDefault(); return window.shell.escape() }
+    if (state.active) return
+    if (e.key === 'ArrowDown') { sel = Math.min(results.length - 1, sel + 1); render(); e.preventDefault() }
+    else if (e.key === 'ArrowUp') { sel = Math.max(0, sel - 1); render(); e.preventDefault() }
+    else if (e.key === 'Enter' && results[sel]) window.shell.choose(sel)
+    else if ((e.metaKey || e.ctrlKey) && /^[1-9]$/.test(e.key) && results[+e.key - 1]) window.shell.choose(+e.key - 1)
+    else if (e.key === 'Backspace' && !q.value) window.shell.escape()
+  })
+  // 粘贴 / 拖入文件或图片：按文件、图片匹配功能
+  async function matchInput(input) {
+    results = await window.shell.queryInput(input); sel = 0
+    q.value = input.files ? input.files.map((f) => f.name).join(', ') : '[图片]'
+    render()
+  }
+  addEventListener('paste', async (e) => {
+    if (state.active) return
+    const files = [...(e.clipboardData.files || [])]
+    if (files.length && files.every((f) => window.shell.pathForFile(f))) {
+      e.preventDefault()
+      return matchInput({ files: files.map((f) => ({ path: window.shell.pathForFile(f), name: f.name })) })
+    }
+    const img = [...e.clipboardData.items].find((i) => i.type.startsWith('image/'))
+    if (img) {
+      e.preventDefault()
+      const r = new FileReader()
+      r.onload = () => matchInput({ image: r.result })
+      r.readAsDataURL(img.getAsFile())
+    }
+  })
+  addEventListener('dragover', (e) => e.preventDefault())
+  addEventListener('drop', (e) => {
+    e.preventDefault()
+    if (state.active) return
+    const files = [...e.dataTransfer.files]
+    if (files.length) matchInput({ files: files.map((f) => ({ path: window.shell.pathForFile(f), name: f.name })) })
+  })
+  $('gear').onclick = () => window.shell.settings()
+  $('detach').onclick = () => window.shell.detach()
+  addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'd' && state.active) { e.preventDefault(); window.shell.detach() }
+    // Cmd/Ctrl+Alt+I：当前插件的开发者工具
+    if ((e.metaKey || e.ctrlKey) && e.altKey && (e.key === 'i' || e.key === 'I' || e.code === 'KeyI') && state.active) { e.preventDefault(); window.shell.devtools() }
+  })
+</script>
+</body>
+</html>

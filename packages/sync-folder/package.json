@@ -1,0 +1,22 @@
+{
+  "name": "@whatevertools/sync-folder",
+  "version": "0.1.0",
+  "description": "whatevertools sync adapter: replicate through a shared folder (iCloud Drive, Dropbox, Syncthing, NAS)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mowtwo/whatevertools.git",
+    "directory": "packages/sync-folder"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "@whatevertools/core": "workspace:*"
+  }
+}

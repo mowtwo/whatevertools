@@ -1,0 +1,65 @@
+{
+  "main": "index.html",
+  "logo": "logo.png",
+  "preload": "preload.js",
+  "features": [
+    {
+      "code": "main",
+      "cmds": [
+        "夹具插件",
+        "fixture"
+      ]
+    },
+    {
+      "code": "files",
+      "cmds": [
+        "夹具文件",
+        {
+          "type": "files",
+          "label": "夹具收文件",
+          "extensions": [
+            "png"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "url",
+      "cmds": [
+        "夹具网址",
+        {
+          "type": "regex",
+          "label": "夹具打开网址",
+          "match": "/^https?:\\/\\/\\S+$/i"
+        }
+      ]
+    },
+    {
+      "code": "push",
+      "mainPush": true,
+      "cmds": [
+        "夹具推送"
+      ]
+    }
+  ],
+  "tools": {
+    "echo": {
+      "description": "回显参数",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "slow": {
+      "description": "带进度的慢任务",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  }
+}

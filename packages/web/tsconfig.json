@@ -1,0 +1,37 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+    "types": []
+  },
+  "include": [
+    "src"
+  ],
+  "references": [
+    {
+      "path": "../core"
+    },
+    {
+      "path": "../api"
+    },
+    {
+      "path": "../compat-utools"
+    },
+    {
+      "path": "../db-indexeddb"
+    },
+    {
+      "path": "../fs-virtual"
+    },
+    {
+      "path": "../shim-node"
+    },
+    {
+      "path": "../shim-electron"
+    },
+    {
+      "path": "../bridge"
+    }
+  ]
+}

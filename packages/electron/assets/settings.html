@@ -1,0 +1,121 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' file: data:; style-src 'unsafe-inline'; script-src 'unsafe-inline'">
+<title>设置</title>
+<style>
+  :root { --bg: #fff; --fg: #1f2328; --muted: #6e7781; --line: #e5e7eb; --card: #f9fafb; --danger: #b91c1c; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #1f1f22; --fg: #e6e6e6; --muted: #9ca3af; --line: #2f2f33; --card: #26262a; --danger: #f87171; } }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 13px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 20px; }
+  h1 { font-size: 18px; margin: 0 0 4px; }
+  .sub { color: var(--muted); margin-bottom: 18px; }
+  section { border: 1px solid var(--line); border-radius: 10px; margin-bottom: 16px; overflow: hidden; }
+  section > header { display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: var(--card); }
+  section > header img { width: 28px; height: 28px; border-radius: 6px; }
+  section > header .n { font-weight: 600; font-size: 14px; }
+  section > header .v { color: var(--muted); }
+  section > header button { margin-left: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  td { padding: 8px 14px; border-top: 1px solid var(--line); vertical-align: middle; }
+  td .t { font-weight: 500; }
+  td .d { color: var(--muted); font-size: 12px; }
+  td .s { color: var(--muted); font-size: 11px; word-break: break-all; }
+  .high .t::after { content: ' · 高风险'; color: var(--danger); font-weight: 400; font-size: 12px; }
+  select, button { font: inherit; padding: 4px 8px; border-radius: 6px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); }
+  .bar { display: flex; gap: 8px; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>插件权限与快捷键</h1>
+  <div class="sub">默认询问；每个插件、每项权限可以单独设置。插件自己的数据库和私有目录始终可用。</div>
+  <div class="bar"><button id="add">添加插件目录…</button><button id="mcp">复制 MCP 配置</button><span id="msg" class="sub"></span></div>
+  <div id="root"></div>
+</main>
+<script>
+  const LABEL = { grant: '允许', deny: '禁止', ask: '询问' }
+  async function draw() {
+    const data = await window.settings.load()
+    const root = document.getElementById('root')
+    root.innerHTML = ''
+    for (const p of data) {
+      const sec = document.createElement('section')
+      sec.innerHTML = `<header><img src="${p.logo}"><span class="n"></span><span class="v"></span><button>全部重置为询问</button></header><table></table>`
+      sec.querySelector('.n').textContent = p.name
+      sec.querySelector('.v').textContent = `${p.id} · v${p.version}${p.legacy ? ' · 旧格式插件' : ''}`
+      sec.querySelector('button').onclick = async () => { await window.settings.reset(p.id); draw() }
+      const rm = document.createElement('button')
+      rm.textContent = '移除插件'
+      rm.style.marginLeft = '8px'
+      rm.onclick = async () => { await window.settings.removePlugin(p.id); draw() }
+      sec.querySelector('header').appendChild(rm)
+      const table = sec.querySelector('table')
+      for (const perm of p.perms) {
+        const tr = document.createElement('tr')
+        if (perm.risk === 'high') tr.className = 'high'
+        tr.innerHTML = `<td><div class="t"></div><div class="d"></div><div class="s"></div></td><td style="width:110px"><select></select></td>`
+        tr.querySelector('.t').textContent = perm.title
+        tr.querySelector('.d').textContent = `${perm.description}（${perm.id}）`
+        tr.querySelector('.s').textContent = perm.scopes && perm.scopes.length ? '范围：' + perm.scopes.join('，') : ''
+        const sel = tr.querySelector('select')
+        for (const d of ['ask', 'grant', 'deny']) sel.add(new Option(LABEL[d], d, false, d === perm.decision))
+        if (perm.locked) sel.disabled = true
+        sel.onchange = async () => { await window.settings.set(p.id, perm.id, sel.value); draw() }
+        table.appendChild(tr)
+      }
+      if (p.hotkeys.length) {
+        const ht = document.createElement('table')
+        ht.innerHTML = '<tr><td colspan="3" style="font-weight:600">指令快捷键</td></tr>'
+        for (const h of p.hotkeys) {
+          const tr = document.createElement('tr')
+          tr.id = 'hk-' + encodeURIComponent(p.id + '\u0000' + h.label)
+          tr.innerHTML = `<td><div class="t"></div></td><td style="width:220px"><input placeholder="点击后按下组合键" style="width:200px;font:inherit;padding:4px 8px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:var(--fg)"></td><td style="width:150px"><label><input type="checkbox"> 先复制选中内容</label></td>`
+          tr.querySelector('.t').textContent = h.label
+          const input = tr.querySelector('input:not([type])')
+          const auto = tr.querySelector('input[type=checkbox]')
+          input.value = h.accelerator
+          auto.checked = h.autocopy
+          const save = () => window.settings.hotkey(p.id, h.label, input.value.trim(), auto.checked)
+          input.addEventListener('keydown', (e) => {
+            e.preventDefault()
+            if (e.key === 'Backspace' || e.key === 'Delete') { input.value = ''; return save() }
+            const mods = [e.metaKey && 'CommandOrControl', e.ctrlKey && !e.metaKey && 'Control', e.altKey && 'Alt', e.shiftKey && 'Shift'].filter(Boolean)
+            const k = e.key.length === 1 ? e.key.toUpperCase() : /^F\d+$/.test(e.key) ? e.key : ({ ' ': 'Space', ArrowUp: 'Up', ArrowDown: 'Down', ArrowLeft: 'Left', ArrowRight: 'Right', Enter: 'Return' })[e.key]
+            if (!k || ['Meta', 'Control', 'Alt', 'Shift'].includes(e.key)) return
+            input.value = [...mods, k].join('+')
+            save()
+          })
+          auto.onchange = save
+          ht.appendChild(tr)
+        }
+        sec.appendChild(ht)
+      }
+      root.appendChild(sec)
+    }
+    focusRow(decodeURIComponent(location.hash.slice(1)))
+  }
+  function focusRow(key) {
+    if (!key) return
+    const row = document.getElementById('hk-' + encodeURIComponent(key))
+    if (row) { row.scrollIntoView({ block: 'center' }); row.querySelector('input').focus() }
+  }
+  window.settings.onFocus(focusRow)
+  document.getElementById('add').onclick = async () => {
+    try {
+      const id = await window.settings.addPlugin()
+      document.getElementById('msg').textContent = id ? `已添加 ${id}` : ''
+    } catch (e) {
+      document.getElementById('msg').textContent = '添加失败：' + e.message
+    }
+    draw()
+  }
+  document.getElementById('mcp').onclick = async () => {
+    const r = await window.settings.copyMcp()
+    document.getElementById('msg').textContent = r ? '已复制到剪贴板（含密钥，只在本机使用）' : 'MCP 服务没有启动'
+  }
+  draw()
+</script>
+</body>
+</html>

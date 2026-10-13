@@ -1,0 +1,33 @@
+{
+  "name": "@whatevertools/web",
+  "version": "0.1.0",
+  "description": "Browser runtime for whatevertools: runs plugins as static web pages with a virtual file system, IndexedDB storage and Node/Electron shims",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mowtwo/whatevertools.git",
+    "directory": "packages/web"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "@whatevertools/core": "workspace:*",
+    "@whatevertools/api": "workspace:*",
+    "@whatevertools/compat-utools": "workspace:*",
+    "@whatevertools/db-indexeddb": "workspace:*",
+    "@whatevertools/fs-virtual": "workspace:*",
+    "@whatevertools/shim-node": "workspace:*",
+    "@whatevertools/shim-electron": "workspace:*",
+    "@whatevertools/bridge": "workspace:*"
+  },
+  "exports": {
+    ".": "./dist/index.js",
+    "./full": "./dist/full.js"
+  }
+}

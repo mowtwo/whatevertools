@@ -1,0 +1,24 @@
+{
+  "name": "@whatevertools/compat-utools",
+  "version": "0.1.0",
+  "description": "uTools compatibility adapter: maps the whatevertools native API to the window.utools shape",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mowtwo/whatevertools.git",
+    "directory": "packages/compat-utools"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "@whatevertools/core": "workspace:*",
+    "@whatevertools/api": "workspace:*",
+    "pinyin-pro": "^3.26.0"
+  }
+}

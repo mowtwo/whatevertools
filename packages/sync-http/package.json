@@ -1,0 +1,22 @@
+{
+  "name": "@whatevertools/sync-http",
+  "version": "0.1.0",
+  "description": "whatevertools sync adapter: replicate through a small HTTP protocol; includes a reference server",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mowtwo/whatevertools.git",
+    "directory": "packages/sync-http"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "@whatevertools/core": "workspace:*"
+  }
+}

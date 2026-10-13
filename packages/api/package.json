@@ -1,0 +1,22 @@
+{
+  "name": "@whatevertools/api",
+  "version": "0.1.0",
+  "description": "Builds the plugin-facing API (uTools-compatible shape plus whatevertools extensions) on top of platform capabilities",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mowtwo/whatevertools.git",
+    "directory": "packages/api"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "@whatevertools/core": "workspace:*"
+  }
+}

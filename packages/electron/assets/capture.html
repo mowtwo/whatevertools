@@ -1,0 +1,92 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; cursor: crosshair; user-select: none; background: #000; }
+  #shot { position: fixed; inset: 0; width: 100%; height: 100%; }
+  #mask { position: fixed; inset: 0; background: rgba(0,0,0,.35); }
+  #sel { position: fixed; border: 1px solid #3b82f6; box-shadow: 0 0 0 9999px rgba(0,0,0,.35); display: none; }
+  #tip { position: fixed; left: 50%; top: 24px; transform: translateX(-50%); background: rgba(0,0,0,.75); color: #fff;
+         font: 13px system-ui; padding: 6px 12px; border-radius: 6px; pointer-events: none; }
+  #lens { position: fixed; width: 120px; height: 120px; border: 2px solid #fff; border-radius: 8px; overflow: hidden;
+          display: none; pointer-events: none; image-rendering: pixelated; box-shadow: 0 2px 10px rgba(0,0,0,.5); }
+  #lens canvas { width: 100%; height: 100%; }
+  #hex { position: fixed; background: rgba(0,0,0,.8); color: #fff; font: 12px ui-monospace, monospace; padding: 2px 6px; border-radius: 4px; display: none; pointer-events: none; }
+</style>
+</head>
+<body>
+<img id="shot">
+<div id="mask"></div>
+<div id="sel"></div>
+<div id="lens"><canvas width="15" height="15"></canvas></div>
+<div id="hex"></div>
+<div id="tip"></div>
+<script>
+  const q = new URLSearchParams(location.search)
+  const mode = q.get('mode')
+  const shot = document.getElementById('shot')
+  const sel = document.getElementById('sel')
+  const tip = document.getElementById('tip')
+  const lens = document.getElementById('lens')
+  const hex = document.getElementById('hex')
+  tip.textContent = mode === 'color' ? '点击取色 · Esc 或右键取消' : '拖动框选 · Esc 或右键取消'
+  if (mode === 'color') document.getElementById('mask').style.display = 'none'
+  const finish = (r) => window.capture.done(r)
+  addEventListener('keydown', (e) => { if (e.key === 'Escape') finish({ cancel: true }) })
+  addEventListener('contextmenu', (e) => { e.preventDefault(); finish({ cancel: true }) })
+  const canvas = document.createElement('canvas')
+  let ctx2d = null
+  shot.onload = () => {
+    canvas.width = shot.naturalWidth
+    canvas.height = shot.naturalHeight
+    ctx2d = canvas.getContext('2d', { willReadFrequently: true })
+    ctx2d.drawImage(shot, 0, 0)
+  }
+  shot.src = q.get('img')
+  const px = (x, y) => {
+    const sx = Math.round(x * canvas.width / innerWidth), sy = Math.round(y * canvas.height / innerHeight)
+    const d = ctx2d.getImageData(Math.max(0, Math.min(canvas.width - 1, sx)), Math.max(0, Math.min(canvas.height - 1, sy)), 1, 1).data
+    return [d[0], d[1], d[2]]
+  }
+  const toHex = (c) => '#' + c.map((v) => v.toString(16).padStart(2, '0')).join('').toUpperCase()
+  if (mode === 'color') {
+    const lc = lens.querySelector('canvas').getContext('2d')
+    addEventListener('mousemove', (e) => {
+      if (!ctx2d) return
+      lens.style.display = hex.style.display = 'block'
+      lens.style.left = e.clientX + 16 + 'px'; lens.style.top = e.clientY + 16 + 'px'
+      hex.style.left = e.clientX + 16 + 'px'; hex.style.top = e.clientY + 140 + 'px'
+      const sx = Math.round(e.clientX * canvas.width / innerWidth), sy = Math.round(e.clientY * canvas.height / innerHeight)
+      lc.imageSmoothingEnabled = false
+      lc.clearRect(0, 0, 15, 15)
+      lc.drawImage(canvas, sx - 7, sy - 7, 15, 15, 0, 0, 15, 15)
+      hex.textContent = toHex(px(e.clientX, e.clientY))
+    })
+    addEventListener('mousedown', (e) => {
+      if (e.button !== 0 || !ctx2d) return
+      const c = px(e.clientX, e.clientY)
+      finish({ color: { hex: toHex(c), rgb: `rgb(${c[0]}, ${c[1]}, ${c[2]})` } })
+    })
+  } else {
+    let start = null
+    addEventListener('mousedown', (e) => { if (e.button === 0) start = { x: e.clientX, y: e.clientY } })
+    addEventListener('mousemove', (e) => {
+      if (!start) return
+      const x = Math.min(start.x, e.clientX), y = Math.min(start.y, e.clientY)
+      const w = Math.abs(e.clientX - start.x), h = Math.abs(e.clientY - start.y)
+      Object.assign(sel.style, { display: 'block', left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px' })
+      document.getElementById('mask').style.display = 'none'
+    })
+    addEventListener('mouseup', (e) => {
+      if (!start || e.button !== 0) return
+      const x = Math.min(start.x, e.clientX), y = Math.min(start.y, e.clientY)
+      const w = Math.abs(e.clientX - start.x), h = Math.abs(e.clientY - start.y)
+      start = null
+      if (w < 3 || h < 3) return
+      finish({ rect: { x, y, width: w, height: h }, viewport: { width: innerWidth, height: innerHeight } })
+    })
+  }
+</script>
+</body>
+</html>

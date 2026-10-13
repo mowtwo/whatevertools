@@ -1,0 +1,13 @@
+{
+  "name": "@whatevertools/launcher",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Bare Electron launcher that runs plugins through the whatevertools runtime",
+  "license": "MIT",
+  "main": "dist/main.js",
+  "dependencies": {
+    "@whatevertools/electron": "workspace:*",
+    "@whatevertools/core": "workspace:*",
+    "@whatevertools/compat-utools": "workspace:*"
+  }
+}

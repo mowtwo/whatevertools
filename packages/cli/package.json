@@ -1,0 +1,26 @@
+{
+  "name": "@whatevertools/cli",
+  "version": "0.1.0",
+  "description": "whatevertools command line: run plugins in a bare Electron launcher, check compatibility, and pack plugins for uTools, Electron or the web",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mowtwo/whatevertools.git",
+    "directory": "packages/cli"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "bin": {
+    "whatevertools": "dist/index.js"
+  },
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "@whatevertools/core": "workspace:*",
+    "@whatevertools/compat-utools": "workspace:*",
+    "esbuild": "^0.25.0"
+  }
+}

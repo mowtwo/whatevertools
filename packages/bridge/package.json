@@ -1,0 +1,22 @@
+{
+  "name": "@whatevertools/bridge",
+  "version": "0.1.0",
+  "description": "Browser-side capabilities backed by a local whatevertools bridge daemon (real fs, child processes, system clipboard and shell) for web and other non-Node platforms",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mowtwo/whatevertools.git",
+    "directory": "packages/bridge"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "@whatevertools/core": "workspace:*"
+  }
+}

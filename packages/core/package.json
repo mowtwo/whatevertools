@@ -1,0 +1,19 @@
+{
+  "name": "@whatevertools/core",
+  "version": "0.1.0",
+  "description": "Runtime-agnostic core of whatevertools: API spec, permissions, versions, accessor hooks, manifest and keyword matching",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mowtwo/whatevertools.git",
+    "directory": "packages/core"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ]
+}

@@ -1,0 +1,6 @@
+export { WhateverToolsHost, type HostOptions, wireError } from './host'
+export { PluginRuntime } from './plugin'
+export type { Shell, EnterAction, CallCtx, Handler, Providers, UserInfo, AiModelInfo, ProviderContext, PermissionPromptRequest, PermissionPromptAnswer } from './types'
+export type { CompatLayer, BridgeContext } from '../shared/protocol'
+export { WindowShell, type WindowShellOptions } from './shell'
+export { runApp, type AppConfig } from './app'
