@@ -1,7 +1,7 @@
 {
+  "version": "1.2.0",
   "id": "quick-union-image",
   "name": "快拼图",
-  "version": "1.2.0",
   "homepage": "https://github.com/mowtwo/utools-quick-union-image",
   "permissions": {
     "fs.read": {

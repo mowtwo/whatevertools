@@ -38,7 +38,7 @@ function expand(file, seen = new Set()) {
 const pages = [
   ['guide/getting-started', '快速开始', '安装 CLI，运行、检查、打包已有的 uTools 插件；写新插件'],
   ['guide/concepts', '核心概念', '分层架构、插件描述文件、targets、身份与版本、支持程度'],
-  ['guide/porting', '移植 uTools 插件', '让 uTools 插件同时兼容 Electron 和网页：差异表、改法、常见问题'],
+  ['guide/porting', '移植现有插件', '让 uTools 插件同时兼容 Electron 和网页：差异表、改法、常见问题'],
   ['guide/vite', 'Vite 项目', '@whatevertools/vite：vite build 产出三端，vite dev 模拟插件环境'],
   ['guide/packaging', '打包与签名', '配置文件、wt build / doctor / init、安装包、macOS 公证、Windows 签名、CI'],
   ['guide/electron-host', '给 Electron 应用加插件', 'runApp / WhateverToolsHost：启动器、权限、安装插件包、提供者'],
@@ -54,7 +54,7 @@ const pages = [
 const url = (p) => `${base}/${p}`
 let index = `# whatevertools
 
-> 启动器类插件（uTools 风格）的通用运行时：一套插件跑在 uTools、Electron 和网页上；几行代码给 Electron 应用和网站加上插件生态（动态安装 upx 插件包、权限、hook）。开源，MIT，npm 包 @whatevertools/*。
+> 效率化软件的插件系统：一套插件跑在 Electron 应用、网页和你自己的平台上；几行代码给软件加上插件生态（动态安装插件包、权限、hook、签名打包）。兼容 uTools 插件格式（plugin.json、upx）。开源，MIT，npm 包 @whatevertools/*。
 
 - 仓库：https://github.com/mowtwo/whatevertools
 - 命令行：\`npx whatevertools <build|doctor|init|skill|run|check|pack>\`，加 \`--json\` 输出机器可读结果

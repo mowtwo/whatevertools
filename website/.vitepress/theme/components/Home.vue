@@ -11,7 +11,7 @@ const tabs = [
 runApp({
   mode: 'launcher',
   plugins: ['./plugins/translate', './downloads/ocr.upx'],
-  compat: [{ type: 'utools' }],          // 现有 uTools 插件直接跑
+  compat: [{ type: 'utools' }],          // 兼容现有插件格式
   install: { enabled: true, max: 20 },   // 用户还能自己装插件包
   policy: { plugins: { ocr: { 'fs.read': ['~/Pictures'] } } },
   providers: { ai: { complete: callMyModel } },
@@ -61,7 +61,7 @@ const features = [
   { t: '版本与身份注入', d: '底座版本、宿主版本、伪装平台名和插件版本都能注入，旧插件看到的还是它熟悉的平台。' },
   { t: '适配器分层', d: 'Canvas 版 sharp、文件对话框与下载、虚拟文件系统、本地 bridge……每个兼容实现都是可替换的独立包。' },
   { t: '签名、公证、CI', d: 'electron-builder 出 dmg / nsis / AppImage，mac 公证、Windows Azure 签名，凭据只走环境变量，附 GitHub Actions 模板。' },
-  { t: 'Vite 插件', d: 'vite build 直接产出三端；vite dev 在浏览器里模拟插件环境，不开 uTools 也能调界面。' },
+  { t: 'Vite 插件', d: 'vite build 直接产出三端；vite dev 在普通浏览器里模拟插件环境，直接调界面。' },
   { t: '109 个 API 支持度透明', d: '每个 API 在 Electron 和网页上是原生、模拟还是不支持，一张表说清楚，运行时还能 supports() 查询。' },
   { t: '为 AI Agent 准备', d: '附带 Agent skill 和 llms.txt，让 Claude 之类的 Agent 直接帮你写插件、移植和打包。' },
 ]
@@ -72,10 +72,10 @@ const features = [
     <section class="hero">
       <div class="hero-text">
         <p class="eyebrow">开源 · MIT · @whatevertools/*</p>
-        <h1>插件，<span class="grad">随便跑在哪。</span></h1>
+        <h1>效率化软件的<br /><span class="grad">插件系统</span></h1>
         <p class="lead">
-          把 uTools 风格的插件带到 Electron 应用、网站和你自己的平台。<br class="br" />
-          一套代码三种产物；任何宿主几行代码就能接入插件生态。
+          给你的 Electron 应用、网站和自己的平台加上插件生态：动态安装、权限、hook、签名打包一应俱全。<br class="br" />
+          一套插件代码，三种产物，随便跑在哪。
         </p>
         <div class="cta">
           <a class="btn primary" href="/guide/getting-started">快速开始</a>
@@ -83,15 +83,16 @@ const features = [
           <a class="btn ghost" href="https://github.com/mowtwo/whatevertools" target="_blank">GitHub</a>
         </div>
         <code class="install">npm i -D @whatevertools/cli</code>
+        <p class="compat">兼容现有的 uTools 插件（plugin.json + preload），不用改代码。</p>
       </div>
       <div class="hero-card" aria-hidden="true">
         <div class="term-bar"><i /><i /><i /><span>~/my-plugin</span></div>
         <pre class="term"><span class="p">$</span> npx whatevertools build --binary
 <span class="m">插件 快拼图（quick-union-image@1.2.0）</span>
-<span class="ok">✔</span> utools   → release/utools
+<span class="ok">✔</span> utools   → out/utools
 <span class="ok">✔</span> electron → 快拼图-1.2.0-arm64.dmg
 <span class="m">  签名 · 公证：凭据来自环境变量</span>
-<span class="ok">✔</span> web      → release/web/quick-union-image</pre>
+<span class="ok">✔</span> web      → out/web/quick-union-image</pre>
       </div>
     </section>
 
@@ -99,7 +100,7 @@ const features = [
       <article>
         <span class="num">01</span>
         <h3>一套插件，三种产物</h3>
-        <p>同一份 plugin.json + preload + 网页：原样发布到 <b>uTools</b>，打成 <b>Electron 独立应用</b>（含签名安装包），或者打成<b>静态网页</b>。插件用 <code>targets</code> 声明自己适合哪些平台。</p>
+        <p>同一份插件代码：发布到<b>启动器平台</b>，打成 <b>Electron 独立应用</b>（含签名安装包），或者打成<b>静态网页</b>。插件用 <code>targets</code> 声明自己适合哪些平台。</p>
         <a href="/guide/packaging">打包与签名 →</a>
       </article>
       <article>
@@ -110,8 +111,8 @@ const features = [
       </article>
       <article>
         <span class="num">03</span>
-        <h3>upx 一键集成</h3>
-        <p><b>兼容安装模式</b>：加了 SDK 的平台可以动态安装任意 upx 插件，数量、白名单都能配。<b>固定打包模式</b>：一个或几个插件直接打成一个二进制或一个网页。</p>
+        <h3>插件包一键集成</h3>
+        <p><b>兼容安装模式</b>：加了 SDK 的平台可以动态安装插件包（兼容 upx 格式），数量、白名单都能配。<b>固定打包模式</b>：一个或几个插件直接打成一个二进制或一个网页。</p>
         <a href="/guide/packages">插件包 →</a>
       </article>
     </section>
@@ -138,7 +139,7 @@ const features = [
 
     <section class="cases">
       <h2>两个真实插件，两种形态</h2>
-      <p class="sub">都是先在 uTools 上发布的插件，同一份代码各自打成最适合它的形态。</p>
+      <p class="sub">同一份插件代码，各自打成最适合它的形态。</p>
       <div class="case-grid">
         <a class="case" href="/cases/quick-union-image">
           <img src="/cases/quick-union-image/01.jpg" alt="快拼图界面" loading="lazy" />
@@ -191,6 +192,7 @@ h1 { font-size: clamp(40px, 6vw, 66px); line-height: 1.05; font-weight: 800; let
 .btn:hover { transform: translateY(-1px); border-color: var(--vp-c-brand-1); }
 .btn.primary { background: var(--vp-c-text-1); color: var(--vp-c-bg); border-color: transparent; }
 .btn.ghost { border-color: transparent; }
+.compat { margin: 10px 0 0; font-size: 13px; color: var(--vp-c-text-3); }
 .install { display: inline-block; margin-top: 24px; font-size: 14px; padding: 6px 12px; border-radius: 8px; background: var(--vp-c-bg-soft); color: var(--vp-c-text-2); }
 
 .hero-card { border-radius: 16px; background: #15151b; box-shadow: 0 30px 80px -30px rgba(255, 61, 110, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.06); overflow: hidden; min-width: 0; }

@@ -5,7 +5,7 @@ const repo = 'https://github.com/mowtwo/whatevertools'
 export default defineConfig({
   lang: 'zh-CN',
   title: 'whatevertools',
-  description: '启动器插件的通用运行时：一套插件跑在 uTools、Electron 和网页上，几行代码给你的应用和网站加上插件生态。',
+  description: '效率化软件的插件系统：一套插件跑在 Electron 应用、网页和你自己的平台上，几行代码给你的软件加上插件生态。',
   cleanUrls: true,
   sitemap: { hostname: 'https://whatevertools.mowtwo.com' },
   lastUpdated: true,
@@ -16,8 +16,8 @@ export default defineConfig({
     ['link', { rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' }],
     ['meta', { name: 'theme-color', content: '#ff5a1f' }],
     ['meta', { property: 'og:type', content: 'website' }],
-    ['meta', { property: 'og:title', content: 'whatevertools · 插件，随便跑在哪' }],
-    ['meta', { property: 'og:description', content: '一套插件跑在 uTools、Electron 和网页上；几行代码给你的 Electron 应用和网站加上插件生态。' }],
+    ['meta', { property: 'og:title', content: 'whatevertools · 效率化软件的插件系统' }],
+    ['meta', { property: 'og:description', content: '效率化软件的插件系统：一套插件跑在 Electron 应用、网页和你自己的平台上；动态安装、权限、hook、签名打包一应俱全。' }],
     ['link', { rel: 'alternate', type: 'text/plain', href: '/llms.txt', title: 'llms.txt' }],
   ],
   themeConfig: {
@@ -36,7 +36,7 @@ export default defineConfig({
           { text: '核心概念', link: '/guide/concepts' },
         ] },
         { text: '插件作者', items: [
-          { text: '移植 uTools 插件', link: '/guide/porting' },
+          { text: '移植现有插件', link: '/guide/porting' },
           { text: 'Vite 项目', link: '/guide/vite' },
           { text: '打包与签名', link: '/guide/packaging' },
         ] },
