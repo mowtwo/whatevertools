@@ -1,6 +1,6 @@
 {
   "name": "@whatevertools/bridge-server",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Local daemon implementing whatevertools capabilities with Node.js for browser clients (@whatevertools/bridge); token auth, origin allowlist, per-plugin permissions and fs roots",
   "license": "MIT",
   "repository": {

@@ -1,6 +1,6 @@
 {
   "name": "@whatevertools/compat-utools",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "uTools compatibility adapter: maps the whatevertools native API to the window.utools shape",
   "license": "MIT",
   "repository": {

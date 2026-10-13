@@ -1,4 +1,4 @@
-# API 支持程度（底座 v0.1.0）
+# API 支持程度（底座 v0.1.1）
 
 由 `packages/core/src/apis.ts` 自动生成（`node scripts/gen-support.mjs`），不要手改。
 

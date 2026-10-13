@@ -5,6 +5,7 @@ import fs from 'node:fs'
 import http from 'node:http'
 import path from 'node:path'
 import crypto from 'node:crypto'
+import { RUNTIME_VERSION } from '@whatevertools/core'
 import type { WhateverToolsHost } from '../host'
 import type { PluginRuntime } from '../plugin'
 
@@ -125,7 +126,7 @@ export class McpServer {
     switch (m.method) {
       case 'initialize': {
         const id = this.host.options.identity
-        return ok({ protocolVersion: m.params?.protocolVersion ?? PROTOCOL, capabilities: { tools: { listChanged: false } }, serverInfo: { name: id?.host?.name ?? 'whatevertools', version: id?.host?.version ?? '0.1.0' } })
+        return ok({ protocolVersion: m.params?.protocolVersion ?? PROTOCOL, capabilities: { tools: { listChanged: false } }, serverInfo: { name: id?.host?.name ?? 'whatevertools', version: id?.host?.version ?? RUNTIME_VERSION } })
       }
       case 'ping':
         return ok({})

@@ -1,6 +1,6 @@
 {
   "name": "@whatevertools/electron",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Electron runtime for whatevertools: main-process host, services and the preload bridge that injects the plugin API",
   "license": "MIT",
   "repository": {

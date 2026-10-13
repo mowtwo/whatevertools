@@ -179,7 +179,7 @@ export function findApi(name: string): ApiSpec | undefined {
 }
 
 /** 底座版本：注入给插件的 versions.runtime */
-export const RUNTIME_VERSION = '0.1.0'
+export const RUNTIME_VERSION = '0.1.1'
 
 /** 每个 API 的版本号（目前都随底座 0.1.0 引入），插件可用 versions.api['db.put'] 判断 */
 export function apiVersions(): Record<string, string> {

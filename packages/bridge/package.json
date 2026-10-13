@@ -1,6 +1,6 @@
 {
   "name": "@whatevertools/bridge",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Browser-side capabilities backed by a local whatevertools bridge daemon (real fs, child processes, system clipboard and shell) for web and other non-Node platforms",
   "license": "MIT",
   "repository": {

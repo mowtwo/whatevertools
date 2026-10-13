@@ -1,6 +1,6 @@
 {
   "name": "@whatevertools/api",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Builds the plugin-facing API (uTools-compatible shape plus whatevertools extensions) on top of platform capabilities",
   "license": "MIT",
   "repository": {

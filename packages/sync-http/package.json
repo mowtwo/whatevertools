@@ -1,6 +1,6 @@
 {
   "name": "@whatevertools/sync-http",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "whatevertools sync adapter: replicate through a small HTTP protocol; includes a reference server",
   "license": "MIT",
   "repository": {

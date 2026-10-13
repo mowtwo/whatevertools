@@ -1,6 +1,6 @@
 {
   "name": "@whatevertools/web",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Browser runtime for whatevertools: runs plugins as static web pages with a virtual file system, IndexedDB storage and Node/Electron shims",
   "license": "MIT",
   "repository": {

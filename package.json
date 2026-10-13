@@ -1,7 +1,7 @@
 {
   "name": "whatevertools-monorepo",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Portable runtime for launcher-style desktop plugins: run, package and port plugins written against uTools-like APIs",
   "license": "MIT",
   "scripts": {
