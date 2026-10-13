@@ -23,15 +23,9 @@ importers:
 
   apps/launcher:
     dependencies:
-      '@whatevertools/compat-utools':
+      '@whatevertools/cli':
         specifier: workspace:*
-        version: link:../../packages/compat-utools
-      '@whatevertools/core':
-        specifier: workspace:*
-        version: link:../../packages/core
-      '@whatevertools/electron':
-        specifier: workspace:*
-        version: link:../../packages/electron
+        version: link:../../packages/cli
 
   packages/api:
     dependencies:
@@ -53,12 +47,27 @@ importers:
 
   packages/cli:
     dependencies:
+      '@whatevertools/api':
+        specifier: workspace:*
+        version: link:../api
       '@whatevertools/compat-utools':
         specifier: workspace:*
         version: link:../compat-utools
       '@whatevertools/core':
         specifier: workspace:*
         version: link:../core
+      '@whatevertools/db-file':
+        specifier: workspace:*
+        version: link:../db-file
+      '@whatevertools/electron':
+        specifier: workspace:*
+        version: link:../electron
+      '@whatevertools/web':
+        specifier: workspace:*
+        version: link:../web
+      electron:
+        specifier: '>=30'
+        version: 43.7.9
       esbuild:
         specifier: ^0.25.0
         version: 0.25.12

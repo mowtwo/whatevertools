@@ -6,8 +6,6 @@
   "license": "MIT",
   "main": "dist/main.js",
   "dependencies": {
-    "@whatevertools/electron": "workspace:*",
-    "@whatevertools/core": "workspace:*",
-    "@whatevertools/compat-utools": "workspace:*"
+    "@whatevertools/cli": "workspace:*"
   }
 }

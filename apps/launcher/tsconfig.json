@@ -2,5 +2,5 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": { "rootDir": "src", "outDir": "dist", "types": ["node"] },
   "include": ["src"],
-  "references": [{ "path": "../../packages/core" }, { "path": "../../packages/electron" }]
+  "references": [{ "path": "../../packages/cli" }]
 }

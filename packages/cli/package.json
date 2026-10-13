@@ -12,7 +12,8 @@
     "access": "public"
   },
   "bin": {
-    "whatevertools": "dist/index.js"
+    "whatevertools": "dist/index.js",
+    "wt": "dist/index.js"
   },
   "main": "dist/index.js",
   "files": [
@@ -20,7 +21,19 @@
   ],
   "dependencies": {
     "@whatevertools/core": "workspace:*",
+    "@whatevertools/api": "workspace:*",
     "@whatevertools/compat-utools": "workspace:*",
+    "@whatevertools/db-file": "workspace:*",
+    "@whatevertools/electron": "workspace:*",
+    "@whatevertools/web": "workspace:*",
     "esbuild": "^0.25.0"
+  },
+  "peerDependencies": {
+    "electron": ">=30"
+  },
+  "peerDependenciesMeta": {
+    "electron": {
+      "optional": true
+    }
   }
 }

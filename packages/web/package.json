@@ -28,6 +28,7 @@
   },
   "exports": {
     ".": "./dist/index.js",
-    "./full": "./dist/full.js"
+    "./full": "./dist/full.js",
+    "./package.json": "./package.json"
   }
 }

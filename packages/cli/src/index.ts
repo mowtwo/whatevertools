@@ -51,8 +51,10 @@ async function main() {
     }
     case 'run': {
       const electron = require('electron') as unknown as string
-      const launcher = path.resolve(__dirname, '..', '..', '..', 'apps', 'launcher')
-      const child = spawn(electron, [launcher, ...args.map((a) => path.resolve(a)), ...(flags.dev ? ['--dev'] : [])], { stdio: 'inherit' })
+      const launcher = path.join(__dirname, 'launcher.js')
+      // 参数原样交给启动器（--config、--dev 以及 --user-data-dir=… 这类 Electron 开关），路径转成绝对路径
+      const passthrough = rest.map((a) => (a.startsWith('-') ? a : path.resolve(a)))
+      const child = spawn(electron, [launcher, ...passthrough], { stdio: 'inherit' })
       child.on('exit', (code) => process.exit(code ?? 0))
       break
     }

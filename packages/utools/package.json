@@ -30,10 +30,19 @@
       "types": "./dist/runtime.d.ts",
       "default": "./dist/runtime.js"
     },
-    "./plugin.schema.json": "./plugin.schema.json"
+    "./plugin.schema.json": "./plugin.schema.json",
+    "./package.json": "./package.json"
   },
   "devDependencies": {
     "@whatevertools/api": "workspace:*",
     "@whatevertools/core": "workspace:*"
+  },
+  "peerDependencies": {
+    "@whatevertools/api": "workspace:^"
+  },
+  "peerDependenciesMeta": {
+    "@whatevertools/api": {
+      "optional": true
+    }
   }
 }

@@ -11,9 +11,10 @@
     "launcher": "pnpm build && electron apps/launcher",
     "wt": "node packages/cli/dist/index.js",
     "test:e2e": "node scripts/e2e.mjs",
-    "test:all": "pnpm build && pnpm test && pnpm test:e2e && pnpm test:web",
+    "test:all": "pnpm build && pnpm test && pnpm test:e2e && pnpm test:web && pnpm test:pack",
     "test:web": "node scripts/web-e2e.mjs",
-    "test:plugins": "node scripts/plugins.mjs"
+    "test:plugins": "node scripts/plugins.mjs",
+    "test:pack": "node scripts/pack-e2e.mjs"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",

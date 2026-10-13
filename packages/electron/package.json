@@ -19,7 +19,8 @@
   ],
   "exports": {
     ".": "./dist/main/index.js",
-    "./preload": "./dist/preload/index.js"
+    "./preload": "./dist/preload/index.js",
+    "./package.json": "./package.json"
   },
   "dependencies": {
     "@whatevertools/core": "workspace:*",

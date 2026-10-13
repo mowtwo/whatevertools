@@ -28,8 +28,8 @@ export interface PackOptions {
   log?: (s: string) => void
 }
 
-/** 运行时源码根目录（monorepo 的 packages/） */
-const PACKAGES = path.resolve(__dirname, '..', '..')
+/** 运行时包的目录（monorepo 里是 packages/<name>，装好的 cli 里是依赖） */
+const pkgDir = (name: string) => path.dirname(require.resolve(`@whatevertools/${name}/package.json`))
 
 /** 完整拷贝目录（包括 node_modules 和点开头的文件，preload 的依赖在里面），filter 收到相对路径 */
 function copyDir(src: string, dst: string, filter: (rel: string) => boolean = () => true) {
@@ -131,9 +131,30 @@ const ELECTRON_RUNTIME = ['core', 'api', 'compat-utools', 'db-file', 'electron']
 
 function resolvePkg(name: string): string | null {
   try {
-    return path.dirname(require.resolve(`${name}/package.json`, { paths: [path.join(PACKAGES, 'electron')] }))
+    return path.dirname(require.resolve(`${name}/package.json`, { paths: [pkgDir('electron'), __dirname] }))
   } catch {
     return null
+  }
+}
+
+/** 递归拷贝这些包的第三方 dependencies（扁平放进 node_modules，不带它们自己的 node_modules） */
+function copyThirdPartyDeps(dirs: string[], nodeModules: string) {
+  const seen = new Set<string>()
+  const queue = [...dirs]
+  while (queue.length) {
+    const from = queue.shift()!
+    for (const dep of Object.keys(readJson(path.join(from, 'package.json'))?.dependencies ?? {})) {
+      if (dep.startsWith('@whatevertools/') || seen.has(dep)) continue
+      seen.add(dep)
+      let dir: string
+      try {
+        dir = path.dirname(require.resolve(`${dep}/package.json`, { paths: [from] }))
+      } catch {
+        throw new Error(`找不到 ${dep}（${from} 的依赖），先在这个项目里安装依赖`)
+      }
+      copyDir(dir, path.join(nodeModules, dep), (rel) => !/^node_modules(\/|$)/.test(rel))
+      queue.push(dir)
+    }
   }
 }
 
@@ -144,12 +165,10 @@ function packElectron(c: BuildCtx) {
   const fj = path.join(c.out, 'plugin', 'whatevertools.json')
   const prev = readJson(fj) ?? {}
   fs.writeFileSync(fj, JSON.stringify({ ...prev, id: c.manifest.id, name: c.manifest.name, version: c.manifest.version }, null, 2))
-  // 运行时包：只拷 dist / assets / package.json
-  for (const p of ELECTRON_RUNTIME) {
-    const src = path.join(PACKAGES, p)
-    const dst = path.join(c.out, 'node_modules', '@whatevertools', p)
-    copyDir(src, dst, (rel) => rel === 'package.json' || rel.startsWith('dist/') || rel.startsWith('assets/'))
-  }
+  // 运行时包：只拷 dist / assets / package.json；它们的第三方依赖（pinyin-pro 等）整包拷过去
+  const runtimeFile = (rel: string) => rel === 'package.json' || /^(dist|assets)(\/|$)/.test(rel)
+  for (const p of ELECTRON_RUNTIME) copyDir(pkgDir(p), path.join(c.out, 'node_modules', '@whatevertools', p), runtimeFile)
+  copyThirdPartyDeps(ELECTRON_RUNTIME.map(pkgDir), path.join(c.out, 'node_modules'))
   // sharp（原生模块，按当前平台）
   const sharp = resolvePkg('sharp')
   if (sharp) {
@@ -171,7 +190,13 @@ function packElectron(c: BuildCtx) {
       if (d) copyDir(d, path.join(c.out, 'node_modules', dep))
     }
   } else c.log('注意：没有找到 sharp，打包出的应用里 image.sharp 不可用')
-  const electronVersion = readJson(path.join(PACKAGES, '..', 'node_modules', 'electron', 'package.json'))?.version ?? '43.7.9'
+  const electronVersion = (() => {
+    try {
+      return readJson(require.resolve('electron/package.json'))?.version
+    } catch {
+      return undefined
+    }
+  })() ?? '43.7.9'
   fs.writeFileSync(path.join(c.out, 'package.json'), JSON.stringify({
     name: c.pkgName,
     productName: c.product,
@@ -253,7 +278,7 @@ async function packWeb(c: WebCtx) {
   // 运行时
   const runtimeFile = `${c.name}-runtime.js`
   await esbuild.build({
-    entryPoints: [path.join(PACKAGES, 'web', 'dist', 'full.js')],
+    entryPoints: [require.resolve('@whatevertools/web/full')],
     bundle: true, format: 'iife', globalName: `__${c.name}Runtime`, platform: 'browser', target: 'es2020',
     outfile: path.join(c.out, runtimeFile), minify: true, legalComments: 'none',
   })

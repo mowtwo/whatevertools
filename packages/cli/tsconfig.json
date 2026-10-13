@@ -2,5 +2,5 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": { "rootDir": "src", "outDir": "dist", "types": ["node"] },
   "include": ["src"],
-  "references": [{ "path": "../core" }, { "path": "../compat-utools" }]
+  "references": [{ "path": "../core" }, { "path": "../compat-utools" }, { "path": "../api" }, { "path": "../db-file" }, { "path": "../electron" }, { "path": "../web" }]
 }

@@ -11,7 +11,18 @@
 
 > 状态：0.1.0，开发中。Electron 和 Web 已有完整的端到端测试；Tauri 还没有开始。
 
+## 安装
+
+```bash
+npm i -D @whatevertools/cli electron     # 命令行：whatevertools（简写 wt）
+npm i -D @whatevertools/utools           # 只要 uTools 类型提示时装这个（零运行时）
+```
+
+宿主或自定义平台按需装 `@whatevertools/electron`、`@whatevertools/web` 等，见下面的包列表。
+
 ## 快速上手
+
+在本仓库里开发时：
 
 ```bash
 pnpm install
@@ -66,8 +77,8 @@ pnpm wt pack ../your-plugin/dist --target web --name acme
 | `@whatevertools/db-file` / `db-indexeddb` | 数据库存储适配器 |
 | `@whatevertools/sync-folder` / `sync-http` | 数据同步适配器（共享文件夹；HTTP，附参考服务端） |
 | `@whatevertools/utools` | 给原生 uTools 插件用的类型包：`window.utools` 的 `.d.ts`、plugin.json 的 JSON Schema，零运行时；可选的 `/runtime` 在 uTools 上实现原生 API |
-| `@whatevertools/cli` | `wt run / check / pack` |
-| `apps/launcher` | 裸 Electron 启动器 |
+| `@whatevertools/cli` | `whatevertools`（`wt`）命令：`run / check / pack`，以及启动器 |
+| `apps/launcher` | 把启动器（`@whatevertools/cli` 里的 `launcher`，`wt run` 用的也是它）打包成独立桌面应用的外壳 |
 
 ## 写插件
 
@@ -195,11 +206,20 @@ uTools 的 6 种入口类型和 4 种来源由兼容层默认注册，可以替�
 ## 测试
 
 ```bash
-pnpm test:all       # 构建 + 单元测试 + Electron 端到端（功能、安全、生命周期）+ Web 端到端
+pnpm test:all       # 构建 + 单元测试 + Electron 端到端（功能、安全、生命周期）+ Web 端到端 + 打包产物启动
 pnpm test:plugins   # 用 ../utools-quick-union-image 和 ../utools-desktop-widgets 的 dist 做验收
 ```
 
 端到端测试运行在无界面模式（`WHATEVERTOOLS_HEADLESS=1`），窗口都在屏幕外，测试数据放在临时目录。
+
+## 发布
+
+推送 `v*` 标签时，GitHub Actions 通过 npm 可信发布（OIDC）发布所有改过版本号的包，不需要 npm token。
+
+```bash
+# 改好要发的包的 version 后
+git tag v0.1.1 && git push origin v0.1.1
+```
 
 ## 路线图
 
