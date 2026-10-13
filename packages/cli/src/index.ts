@@ -4,6 +4,7 @@
 //        按 whatevertools.config.{ts,mjs,cjs,json} 打包；--binary 让 electron 目标继续出安装包（签名、公证凭据走环境变量）
 //   whatevertools doctor [--config <文件>] [--target electron] [--binary] [--platform …] [--json]   检查构建环境和签名凭据
 //   whatevertools init [--ci github] [--force]                       生成配置文件（和 CI 模板）
+//   whatevertools skill [--dir .claude/skills] [--force]             把给 AI Agent 用的 skill 装进项目
 //   whatevertools run <插件目录或插件包...> [--dev] [--config <启动器配置>]   在裸 Electron 启动器里运行
 //   whatevertools check <插件目录> [--name whatevertools] [--json]    兼容报告
 //   whatevertools pack <插件目录或插件包...> --target utools|electron|web    不用配置文件、直接打包
@@ -87,6 +88,17 @@ async function main() {
       result({ written })
       break
     }
+    case 'skill': {
+      const fs = require('node:fs') as typeof import('node:fs')
+      const src = path.join(__dirname, '..', 'skills', 'whatevertools')
+      const dst = path.resolve(cwd, flags.dir ?? path.join('.claude', 'skills'), 'whatevertools')
+      if (fs.existsSync(dst) && flags.force !== 'true') throw new UsageError(`${dst} 已存在（--force 覆盖）`)
+      fs.rmSync(dst, { recursive: true, force: true })
+      fs.cpSync(src, dst, { recursive: true })
+      log(`已安装 skill：${dst}`)
+      result({ dir: dst })
+      break
+    }
     case 'pack': {
       if (!args[0]) throw new UsageError('用法：whatevertools pack <插件目录或插件包...> --target utools|electron|web')
       const target = (flags.target ?? 'utools') as Target
@@ -120,10 +132,10 @@ async function main() {
     case undefined:
     case 'help':
     case '--help':
-      console.log('用法：whatevertools <build|doctor|init|run|check|pack> …（加 --json 输出机器可读结果；详见 https://github.com/mowtwo/whatevertools）')
+      console.log('用法：whatevertools <build|doctor|init|skill|run|check|pack> …（加 --json 输出机器可读结果；详见 https://github.com/mowtwo/whatevertools）')
       break
     default:
-      throw new UsageError(`不认识的命令：${cmd}（可用：build、doctor、init、run、check、pack）`)
+      throw new UsageError(`不认识的命令：${cmd}（可用：build、doctor、init、skill、run、check、pack）`)
   }
 }
 

@@ -8,217 +8,217 @@
 
 ## lifecycle
 
-| API | uTools 旧名 | 权限 | Electron | Web |
-|---|---|---|---|---|
-| `lifecycle.onEnter` | `onPluginEnter` |  | 原生 | 模拟 |
-| `lifecycle.onLeave` | `onPluginOut` |  | 原生 | 模拟 |
-| `lifecycle.onReady` | `onPluginReady` |  | 原生 | 模拟 |
-| `lifecycle.onDetach` | `onPluginDetach` |  | 模拟 | 占位 |
-| `lifecycle.onSearchPush` | `onMainPush` |  | 模拟 | — |
-| `lifecycle.exit` | `outPlugin` |  | 原生 | 模拟 |
+| API | uTools 旧名 | 权限 | Electron | Web | 说明 |
+|---|---|---|---|---|---|
+| `lifecycle.onEnter` | `onPluginEnter` |  | 原生 | 模拟 |  |
+| `lifecycle.onLeave` | `onPluginOut` |  | 原生 | 模拟 |  |
+| `lifecycle.onReady` | `onPluginReady` |  | 原生 | 模拟 |  |
+| `lifecycle.onDetach` | `onPluginDetach` |  | 模拟 | 占位 | 启动器没有分离窗口时不会触发 |
+| `lifecycle.onSearchPush` | `onMainPush` |  | 模拟 | — |  |
+| `lifecycle.exit` | `outPlugin` |  | 原生 | 模拟 |  |
 
 ## events
 
-| API | uTools 旧名 | 权限 | Electron | Web |
-|---|---|---|---|---|
-| `schedule.onTrigger` | `onScheduleTrigger` | `schedule` | 模拟 | 部分 |
+| API | uTools 旧名 | 权限 | Electron | Web | 说明 |
+|---|---|---|---|---|---|
+| `schedule.onTrigger` | `onScheduleTrigger` | `schedule` | 模拟 | 部分 |  |
 
 ## panel
 
-| API | uTools 旧名 | 权限 | Electron | Web |
-|---|---|---|---|---|
-| `panel.hide` | `hideMainWindow` |  | 原生 | — |
-| `panel.show` | `showMainWindow` |  | 原生 | — |
-| `panel.setHeight` | `setExpandHeight` |  | 模拟 | 占位 |
-| `panel.input.set` | `setSubInput` |  | 模拟 | — |
-| `panel.input.remove` | `removeSubInput` |  | 模拟 | — |
-| `panel.input.setValue` | `setSubInputValue` |  | 模拟 | — |
-| `panel.input.focus` | `subInputFocus` |  | 模拟 | — |
-| `panel.input.blur` | `subInputBlur` |  | 模拟 | — |
-| `panel.input.select` | `subInputSelect` |  | 模拟 | — |
+| API | uTools 旧名 | 权限 | Electron | Web | 说明 |
+|---|---|---|---|---|---|
+| `panel.hide` | `hideMainWindow` |  | 原生 | — |  |
+| `panel.show` | `showMainWindow` |  | 原生 | — |  |
+| `panel.setHeight` | `setExpandHeight` |  | 模拟 | 占位 |  |
+| `panel.input.set` | `setSubInput` |  | 模拟 | — |  |
+| `panel.input.remove` | `removeSubInput` |  | 模拟 | — |  |
+| `panel.input.setValue` | `setSubInputValue` |  | 模拟 | — |  |
+| `panel.input.focus` | `subInputFocus` |  | 模拟 | — |  |
+| `panel.input.blur` | `subInputBlur` |  | 模拟 | — |  |
+| `panel.input.select` | `subInputSelect` |  | 模拟 | — |  |
 
 ## window
 
-| API | uTools 旧名 | 权限 | Electron | Web |
-|---|---|---|---|---|
-| `window.create` | `createBrowserWindow` | `window.create` | 原生 | 部分 |
-| `window.sendToParent` | `sendToParent` |  | 原生 | 模拟 |
-| `window.type` | `getWindowType` |  | 原生 | 模拟 |
+| API | uTools 旧名 | 权限 | Electron | Web | 说明 |
+|---|---|---|---|---|---|
+| `window.create` | `createBrowserWindow` | `window.create` | 原生 | 部分 | web 端用 window.open / iframe 模拟 |
+| `window.sendToParent` | `sendToParent` |  | 原生 | 模拟 |  |
+| `window.type` | `getWindowType` |  | 原生 | 模拟 |  |
 
 ## page
 
-| API | uTools 旧名 | 权限 | Electron | Web |
-|---|---|---|---|---|
-| `page.find` | `findInPage` |  | 原生 | — |
-| `page.stopFind` | `stopFindInPage` |  | 原生 | — |
+| API | uTools 旧名 | 权限 | Electron | Web | 说明 |
+|---|---|---|---|---|---|
+| `page.find` | `findInPage` |  | 原生 | — |  |
+| `page.stopFind` | `stopFindInPage` |  | 原生 | — |  |
 
 ## system
 
-| API | uTools 旧名 | 权限 | Electron | Web |
-|---|---|---|---|---|
-| `system.notify` | `showNotification` | `notification` | 原生 | 模拟 |
-| `dialog.open` | `showOpenDialog` | `dialog` | 原生 | 部分 |
-| `dialog.save` | `showSaveDialog` | `dialog` | 原生 | 模拟 |
-| `dialog.openAsync` |  | `dialog` | 原生 | 模拟 |
-| `dialog.saveAsync` |  | `dialog` | 原生 | 模拟 |
-| `shell.openPath` | `shellOpenPath` | `shell.open` | 原生 | 部分 |
-| `shell.trash` | `shellTrashItem` | `shell.trash` | 原生 | — |
-| `shell.showInFolder` | `shellShowItemInFolder` | `shell.open` | 原生 | 占位 |
-| `shell.openExternal` | `shellOpenExternal` | `shell.external` | 原生 | 模拟 |
-| `shell.beep` | `shellBeep` |  | 原生 | — |
-| `system.appName` | `getAppName` |  | 原生 | 模拟 |
-| `system.appVersion` | `getAppVersion` |  | 原生 | 模拟 |
-| `paths.get` | `getPath` |  | 原生 | 占位 |
-| `system.fileIcon` | `getFileIcon` |  | 原生 | — |
-| `system.fileIconAsync` | `getFileIconAsync` |  | 原生 | — |
-| `paths.data` | `getPluginLocalDataPath` | `fs.plugin` | 原生 | 模拟 |
-| `paths.temp` | `getPluginTempPath` | `fs.plugin` | 原生 | 模拟 |
-| `system.isDev` | `isDev` |  | 原生 | 模拟 |
-| `system.isMac` | `isMacOS` |  | 原生 | 模拟 |
-| `system.isWindows` | `isWindows` |  | 原生 | 模拟 |
-| `system.isLinux` | `isLinux` |  | 原生 | 模拟 |
-| `system.isDark` | `isDarkColors` |  | 原生 | 模拟 |
-| `system.onThemeChange` |  |  | 原生 | 模拟 |
+| API | uTools 旧名 | 权限 | Electron | Web | 说明 |
+|---|---|---|---|---|---|
+| `system.notify` | `showNotification` | `notification` | 原生 | 模拟 |  |
+| `dialog.open` | `showOpenDialog` | `dialog` | 原生 | 部分 | web：选目录且带 createDirectory 时返回下载目录；其他情况浏览器没法同步选文件，返回 undefined 并异步弹出选择器，选中的文件按 WebBootConfig.fileDialogs.openDialog 交给插件（默认作为 files 进入）。新代码请用 dialog.openAsync |
+| `dialog.save` | `showSaveDialog` | `dialog` | 原生 | 模拟 | web：返回 /downloads 下的路径，写进这个路径的文件会由浏览器下载 |
+| `dialog.openAsync` |  | `dialog` | 原生 | 模拟 | web：浏览器文件选择器，选中的文件放在虚拟文件系统 /picked 下（0.2.0 起） |
+| `dialog.saveAsync` |  | `dialog` | 原生 | 模拟 | 同 dialog.save（0.2.0 起） |
+| `shell.openPath` | `shellOpenPath` | `shell.open` | 原生 | 部分 | web：只对 /downloads 下的文件有效（重新下载） |
+| `shell.trash` | `shellTrashItem` | `shell.trash` | 原生 | — |  |
+| `shell.showInFolder` | `shellShowItemInFolder` | `shell.open` | 原生 | 占位 | web：浏览器管理下载位置，调用不报错也没有效果 |
+| `shell.openExternal` | `shellOpenExternal` | `shell.external` | 原生 | 模拟 |  |
+| `shell.beep` | `shellBeep` |  | 原生 | — |  |
+| `system.appName` | `getAppName` |  | 原生 | 模拟 |  |
+| `system.appVersion` | `getAppVersion` |  | 原生 | 模拟 | 返回 identity.mock.platform.version |
+| `paths.get` | `getPath` |  | 原生 | 占位 |  |
+| `system.fileIcon` | `getFileIcon` |  | 原生 | — |  |
+| `system.fileIconAsync` | `getFileIconAsync` |  | 原生 | — |  |
+| `paths.data` | `getPluginLocalDataPath` | `fs.plugin` | 原生 | 模拟 |  |
+| `paths.temp` | `getPluginTempPath` | `fs.plugin` | 原生 | 模拟 |  |
+| `system.isDev` | `isDev` |  | 原生 | 模拟 |  |
+| `system.isMac` | `isMacOS` |  | 原生 | 模拟 |  |
+| `system.isWindows` | `isWindows` |  | 原生 | 模拟 |  |
+| `system.isLinux` | `isLinux` |  | 原生 | 模拟 |  |
+| `system.isDark` | `isDarkColors` |  | 原生 | 模拟 |  |
+| `system.onThemeChange` |  |  | 原生 | 模拟 | 宿主主题变化（跟随系统或宿主设置） |
 
 ## device
 
-| API | uTools 旧名 | 权限 | Electron | Web |
-|---|---|---|---|---|
-| `device.id` | `getNativeId` | `system.identity` | 模拟 | 模拟 |
+| API | uTools 旧名 | 权限 | Electron | Web | 说明 |
+|---|---|---|---|---|---|
+| `device.id` | `getNativeId` | `system.identity` | 模拟 | 模拟 |  |
 
 ## account
 
-| API | uTools 旧名 | 权限 | Electron | Web |
-|---|---|---|---|---|
-| `account.user` | `getUser` | `system.identity` | 模拟 | 模拟 |
+| API | uTools 旧名 | 权限 | Electron | Web | 说明 |
+|---|---|---|---|---|---|
+| `account.user` | `getUser` | `system.identity` | 模拟 | 模拟 | 宿主可通过 hook 提供用户信息，默认 null |
 
 ## context
 
-| API | uTools 旧名 | 权限 | Electron | Web |
-|---|---|---|---|---|
-| `context.activeFolder` | `readCurrentFolderPath` | `system.context` | 部分 | — |
-| `context.activeBrowserUrl` | `readCurrentBrowserUrl` | `system.context` | 部分 | — |
-| `context.activeWindow` |  | `system.context` | 部分 | — |
+| API | uTools 旧名 | 权限 | Electron | Web | 说明 |
+|---|---|---|---|---|---|
+| `context.activeFolder` | `readCurrentFolderPath` | `system.context` | 部分 | — |  |
+| `context.activeBrowserUrl` | `readCurrentBrowserUrl` | `system.context` | 部分 | — |  |
+| `context.activeWindow` |  | `system.context` | 部分 | — |  |
 
 ## clipboard
 
-| API | uTools 旧名 | 权限 | Electron | Web |
-|---|---|---|---|---|
-| `clipboard.writeText` | `copyText` | `clipboard.write` | 原生 | 模拟 |
-| `clipboard.writeImage` | `copyImage` | `clipboard.write` | 原生 | 模拟 |
-| `clipboard.writeFiles` | `copyFile` | `clipboard.write` | 原生 | — |
-| `clipboard.readFiles` | `getCopiedFiles` | `clipboard.read` | 原生 | — |
+| API | uTools 旧名 | 权限 | Electron | Web | 说明 |
+|---|---|---|---|---|---|
+| `clipboard.writeText` | `copyText` | `clipboard.write` | 原生 | 模拟 |  |
+| `clipboard.writeImage` | `copyImage` | `clipboard.write` | 原生 | 模拟 |  |
+| `clipboard.writeFiles` | `copyFile` | `clipboard.write` | 原生 | — |  |
+| `clipboard.readFiles` | `getCopiedFiles` | `clipboard.read` | 原生 | — |  |
 
 ## input
 
-| API | uTools 旧名 | 权限 | Electron | Web |
-|---|---|---|---|---|
-| `input.sendText` | `hideMainWindowPasteText` | `input.paste` | 模拟 | — |
-| `input.sendFiles` | `hideMainWindowPasteFile` | `input.paste` | 模拟 | — |
-| `input.sendImage` | `hideMainWindowPasteImage` | `input.paste` | 模拟 | — |
-| `input.typeText` | `hideMainWindowTypeString` | `input.paste` | 模拟 | — |
-| `input.startDrag` | `startDrag` | `input.drag` | 原生 | — |
-| `input.keyTap` | `simulateKeyboardTap` | `input.simulate` | 部分 | — |
-| `input.mouseMove` | `simulateMouseMove` | `input.simulate` | 占位 | — |
-| `input.mouseClick` | `simulateMouseClick` | `input.simulate` | 占位 | — |
-| `input.mouseDoubleClick` | `simulateMouseDoubleClick` | `input.simulate` | 占位 | — |
-| `input.mouseRightClick` | `simulateMouseRightClick` | `input.simulate` | 占位 | — |
+| API | uTools 旧名 | 权限 | Electron | Web | 说明 |
+|---|---|---|---|---|---|
+| `input.sendText` | `hideMainWindowPasteText` | `input.paste` | 模拟 | — |  |
+| `input.sendFiles` | `hideMainWindowPasteFile` | `input.paste` | 模拟 | — |  |
+| `input.sendImage` | `hideMainWindowPasteImage` | `input.paste` | 模拟 | — |  |
+| `input.typeText` | `hideMainWindowTypeString` | `input.paste` | 模拟 | — |  |
+| `input.startDrag` | `startDrag` | `input.drag` | 原生 | — |  |
+| `input.keyTap` | `simulateKeyboardTap` | `input.simulate` | 部分 | — | 系统级按键：macOS AppleScript / Windows SendKeys / Linux xdotool，或 providers.input |
+| `input.mouseMove` | `simulateMouseMove` | `input.simulate` | 占位 | — |  |
+| `input.mouseClick` | `simulateMouseClick` | `input.simulate` | 占位 | — |  |
+| `input.mouseDoubleClick` | `simulateMouseDoubleClick` | `input.simulate` | 占位 | — |  |
+| `input.mouseRightClick` | `simulateMouseRightClick` | `input.simulate` | 占位 | — |  |
 
 ## screen
 
-| API | uTools 旧名 | 权限 | Electron | Web |
-|---|---|---|---|---|
-| `screen.captureRegion` | `screenCapture` | `screen.captureDisplay` | 模拟 | — |
-| `screen.captureDisplay` | `captureDisplay` | `screen.captureDisplay` | 原生 | — |
-| `screen.pickColor` | `screenColorPick` | `screen.captureDisplay` | 模拟 | — |
-| `screen.captureSources` | `desktopCaptureSources` | `screen.captureDisplay` | 原生 | — |
-| `screen.displays` | `getAllDisplays` | `screen.read` | 原生 | 模拟 |
-| `screen.primaryDisplay` | `getPrimaryDisplay` | `screen.read` | 原生 | 模拟 |
-| `screen.cursor` | `getCursorScreenPoint` | `screen.read` | 原生 | 部分 |
-| `screen.nearestDisplay` | `getDisplayNearestPoint` | `screen.read` | 原生 | 模拟 |
-| `screen.matchingDisplay` | `getDisplayMatching` | `screen.read` | 原生 | 模拟 |
-| `screen.toDipPoint` | `screenToDipPoint` | `screen.read` | 原生 | 模拟 |
-| `screen.toScreenPoint` | `dipToScreenPoint` | `screen.read` | 原生 | 模拟 |
-| `screen.toDipRect` | `screenToDipRect` | `screen.read` | 原生 | 模拟 |
-| `screen.toScreenRect` | `dipToScreenRect` | `screen.read` | 原生 | 模拟 |
+| API | uTools 旧名 | 权限 | Electron | Web | 说明 |
+|---|---|---|---|---|---|
+| `screen.captureRegion` | `screenCapture` | `screen.captureDisplay` | 模拟 | — |  |
+| `screen.captureDisplay` | `captureDisplay` | `screen.captureDisplay` | 原生 | — |  |
+| `screen.pickColor` | `screenColorPick` | `screen.captureDisplay` | 模拟 | — |  |
+| `screen.captureSources` | `desktopCaptureSources` | `screen.captureDisplay` | 原生 | — |  |
+| `screen.displays` | `getAllDisplays` | `screen.read` | 原生 | 模拟 |  |
+| `screen.primaryDisplay` | `getPrimaryDisplay` | `screen.read` | 原生 | 模拟 |  |
+| `screen.cursor` | `getCursorScreenPoint` | `screen.read` | 原生 | 部分 |  |
+| `screen.nearestDisplay` | `getDisplayNearestPoint` | `screen.read` | 原生 | 模拟 |  |
+| `screen.matchingDisplay` | `getDisplayMatching` | `screen.read` | 原生 | 模拟 |  |
+| `screen.toDipPoint` | `screenToDipPoint` | `screen.read` | 原生 | 模拟 |  |
+| `screen.toScreenPoint` | `dipToScreenPoint` | `screen.read` | 原生 | 模拟 |  |
+| `screen.toDipRect` | `screenToDipRect` | `screen.read` | 原生 | 模拟 |  |
+| `screen.toScreenRect` | `dipToScreenRect` | `screen.read` | 原生 | 模拟 |  |
 
 ## db
 
-| API | uTools 旧名 | 权限 | Electron | Web |
-|---|---|---|---|---|
-| `db.put` | `db.put` | `storage` | 原生 | 模拟 |
-| `db.get` | `db.get` | `storage` | 原生 | 模拟 |
-| `db.remove` | `db.remove` | `storage` | 原生 | 模拟 |
-| `db.bulk` | `db.bulkDocs` | `storage` | 原生 | 模拟 |
-| `db.all` | `db.allDocs` | `storage` | 原生 | 模拟 |
-| `db.putAttachment` | `db.postAttachment` | `storage` | 原生 | 部分 |
-| `db.getAttachment` | `db.getAttachment` | `storage` | 原生 | 模拟 |
-| `db.getAttachmentType` | `db.getAttachmentType` | `storage` | 原生 | 模拟 |
-| `db.syncState` | `db.replicateStateFromCloud` | `storage` | 模拟 | 模拟 |
-| `db.onPull` | `onDbPull` | `storage` | 模拟 | 模拟 |
-| `kv.set` | `dbStorage.setItem` | `storage` | 原生 | 模拟 |
-| `kv.get` | `dbStorage.getItem` | `storage` | 原生 | 模拟 |
-| `kv.remove` | `dbStorage.removeItem` | `storage` | 原生 | 模拟 |
+| API | uTools 旧名 | 权限 | Electron | Web | 说明 |
+|---|---|---|---|---|---|
+| `db.put` | `db.put` | `storage` | 原生 | 模拟 |  |
+| `db.get` | `db.get` | `storage` | 原生 | 模拟 |  |
+| `db.remove` | `db.remove` | `storage` | 原生 | 模拟 |  |
+| `db.bulk` | `db.bulkDocs` | `storage` | 原生 | 模拟 |  |
+| `db.all` | `db.allDocs` | `storage` | 原生 | 模拟 |  |
+| `db.putAttachment` | `db.postAttachment` | `storage` | 原生 | 部分 |  |
+| `db.getAttachment` | `db.getAttachment` | `storage` | 原生 | 模拟 |  |
+| `db.getAttachmentType` | `db.getAttachmentType` | `storage` | 原生 | 模拟 |  |
+| `db.syncState` | `db.replicateStateFromCloud` | `storage` | 模拟 | 模拟 | 配置了同步适配器才有意义 |
+| `db.onPull` | `onDbPull` | `storage` | 模拟 | 模拟 | 配置了同步适配器才会触发 |
+| `kv.set` | `dbStorage.setItem` | `storage` | 原生 | 模拟 |  |
+| `kv.get` | `dbStorage.getItem` | `storage` | 原生 | 模拟 |  |
+| `kv.remove` | `dbStorage.removeItem` | `storage` | 原生 | 模拟 |  |
 
 ## features
 
-| API | uTools 旧名 | 权限 | Electron | Web |
-|---|---|---|---|---|
-| `features.list` | `getFeatures` |  | 原生 | 模拟 |
-| `features.set` | `setFeature` | `features` | 原生 | 模拟 |
-| `features.remove` | `removeFeature` | `features` | 原生 | 模拟 |
+| API | uTools 旧名 | 权限 | Electron | Web | 说明 |
+|---|---|---|---|---|---|
+| `features.list` | `getFeatures` |  | 原生 | 模拟 |  |
+| `features.set` | `setFeature` | `features` | 原生 | 模拟 |  |
+| `features.remove` | `removeFeature` | `features` | 原生 | 模拟 |  |
 
 ## launch
 
-| API | uTools 旧名 | 权限 | Electron | Web |
-|---|---|---|---|---|
-| `launch.open` | `redirect` | `redirect` | 模拟 | — |
+| API | uTools 旧名 | 权限 | Electron | Web | 说明 |
+|---|---|---|---|---|---|
+| `launch.open` | `redirect` | `redirect` | 模拟 | — |  |
 
 ## hotkeys
 
-| API | uTools 旧名 | 权限 | Electron | Web |
-|---|---|---|---|---|
-| `hotkeys.openSettings` | `redirectHotKeySetting` |  | 模拟 | — |
-| `hotkeys.get` | `getCmdHotKey` |  | 模拟 | — |
+| API | uTools 旧名 | 权限 | Electron | Web | 说明 |
+|---|---|---|---|---|---|
+| `hotkeys.openSettings` | `redirectHotKeySetting` |  | 模拟 | — |  |
+| `hotkeys.get` | `getCmdHotKey` |  | 模拟 | — |  |
 
 ## schedule
 
-| API | uTools 旧名 | 权限 | Electron | Web |
-|---|---|---|---|---|
-| `schedule.request` | `requestSchedule` | `schedule` | 模拟 | 部分 |
-| `schedule.list` | `getSchedules` | `schedule` | 模拟 | 部分 |
-| `schedule.remove` | `removeSchedule` | `schedule` | 模拟 | 部分 |
+| API | uTools 旧名 | 权限 | Electron | Web | 说明 |
+|---|---|---|---|---|---|
+| `schedule.request` | `requestSchedule` | `schedule` | 模拟 | 部分 |  |
+| `schedule.list` | `getSchedules` | `schedule` | 模拟 | 部分 |  |
+| `schedule.remove` | `removeSchedule` | `schedule` | 模拟 | 部分 |  |
 
 ## ai
 
-| API | uTools 旧名 | 权限 | Electron | Web |
-|---|---|---|---|---|
-| `ai.chat` | `ai` | `ai` | 模拟 | 模拟 |
-| `ai.models` | `allAiModels` | `ai` | 模拟 | 模拟 |
-| `tools.register` | `registerTool` |  | 模拟 | — |
+| API | uTools 旧名 | 权限 | Electron | Web | 说明 |
+|---|---|---|---|---|---|
+| `ai.chat` | `ai` | `ai` | 模拟 | 模拟 | 需要宿主配置模型提供方（hook: service:ai） |
+| `ai.models` | `allAiModels` | `ai` | 模拟 | 模拟 |  |
+| `tools.register` | `registerTool` |  | 模拟 | — | 注册不需要权限；外部 Agent 第一次调用时按 mcp 权限询问 |
 
 ## media
 
-| API | uTools 旧名 | 权限 | Electron | Web |
-|---|---|---|---|---|
-| `media.ffmpeg` | `runFFmpeg` | `media.ffmpeg` | 模拟 | 部分 |
-| `image.sharp` | `sharp` | `image.sharp` | 模拟 | 部分 |
+| API | uTools 旧名 | 权限 | Electron | Web | 说明 |
+|---|---|---|---|---|---|
+| `media.ffmpeg` | `runFFmpeg` | `media.ffmpeg` | 模拟 | 部分 | 使用宿主配置或 PATH 中的 ffmpeg；web 端可接 ffmpeg.wasm |
+| `image.sharp` | `sharp` | `image.sharp` | 模拟 | 部分 | electron：宿主安装的 sharp；web：@whatevertools/sharp-canvas（Canvas 实现的常用子集，不支持 AVIF 编码、ICC、动图），也可以换成 wasm 版 |
 
 ## payment
 
-| API | uTools 旧名 | 权限 | Electron | Web |
-|---|---|---|---|---|
-| `billing.isPurchased` | `isPurchasedUser` | `payment` | 占位 | 占位 |
-| `billing.purchase` | `openPurchase` | `payment` | 占位 | 占位 |
+| API | uTools 旧名 | 权限 | Electron | Web | 说明 |
+|---|---|---|---|---|---|
+| `billing.isPurchased` | `isPurchasedUser` | `payment` | 占位 | 占位 | 默认 true，宿主可 hook |
+| `billing.purchase` | `openPurchase` | `payment` | 占位 | 占位 |  |
 
 ## ubrowser
 
-| API | uTools 旧名 | 权限 | Electron | Web |
-|---|---|---|---|---|
-| `browser.automate` | `ubrowser` | `browser` | 部分 | — |
-| `browser.idle` | `getIdleUBrowsers` | `browser` | 模拟 | — |
-| `browser.setProxy` | `setUBrowserProxy` | `browser` | 模拟 | — |
-| `browser.clearCache` | `clearUBrowserCache` | `browser` | 模拟 | — |
+| API | uTools 旧名 | 权限 | Electron | Web | 说明 |
+|---|---|---|---|---|---|
+| `browser.automate` | `ubrowser` | `browser` | 部分 | — | 用隐藏的 BrowserWindow 实现常用链式指令 |
+| `browser.idle` | `getIdleUBrowsers` | `browser` | 模拟 | — |  |
+| `browser.setProxy` | `setUBrowserProxy` | `browser` | 模拟 | — |  |
+| `browser.clearCache` | `clearUBrowserCache` | `browser` | 模拟 | — |  |
 
 ## 权限
 

@@ -61,7 +61,7 @@ export const APIS: ApiSpec[] = [
 
   // 系统
   api('system.notify', 'sync', 'system', 'notification', N, { legacy: 'showNotification' }),
-  api('dialog.open', 'sync', 'system', 'dialog', S('native', 'partial'), { legacy: 'showOpenDialog', note: 'web：选目录且带 createDirectory 时返回下载目录；其他情况浏览器没法同步选文件，返回 undefined 并异步弹出选择器，选中的文件按 WebBootConfig.openDialog 交给插件（默认作为 files 进入）。新代码请用 dialog.openAsync' }),
+  api('dialog.open', 'sync', 'system', 'dialog', S('native', 'partial'), { legacy: 'showOpenDialog', note: 'web：选目录且带 createDirectory 时返回下载目录；其他情况浏览器没法同步选文件，返回 undefined 并异步弹出选择器，选中的文件按 WebBootConfig.fileDialogs.openDialog 交给插件（默认作为 files 进入）。新代码请用 dialog.openAsync' }),
   api('dialog.save', 'sync', 'system', 'dialog', S('native', 'emulated'), { legacy: 'showSaveDialog', note: 'web：返回 /downloads 下的路径，写进这个路径的文件会由浏览器下载' }),
   api('dialog.openAsync', 'async', 'system', 'dialog', S('native', 'emulated'), { since: '0.2.0', note: 'web：浏览器文件选择器，选中的文件放在虚拟文件系统 /picked 下' }),
   api('dialog.saveAsync', 'async', 'system', 'dialog', S('native', 'emulated'), { since: '0.2.0', note: '同 dialog.save' }),
