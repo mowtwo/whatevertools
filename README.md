@@ -240,7 +240,7 @@ pnpm test:plugins   # 用 ../utools-quick-union-image 和 ../utools-desktop-widg
 git tag v0.2.0 && git push origin v0.2.0
 ```
 
-新增包时先跑 `scripts/npm-trust.sh` 给它配置可信发布者（需要本机 npm 登录和 2FA），之后的版本都走 OIDC。
+新增包时：先在本机手动发布一次（npm 要求包已经存在才能配置可信发布者），再跑 `scripts/npm-trust.sh`（需要 npm 登录和 2FA），之后的版本都走 OIDC。新版本发布后要过 npm 的安全扫描，大约 2 分钟后才能查到、几分钟后才能安装。
 
 ## 路线图
 
