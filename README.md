@@ -71,6 +71,7 @@ pnpm wt pack ../your-plugin/dist --target web --name acme
 | `@whatevertools/compat-utools` | uTools 兼容层：`window.utools`、plugin.json 加载器、text / regex / over / img / files / window 入口、main / panel / hotkey / redirect 来源、拼音搜索 |
 | `@whatevertools/electron` | Electron 平台：宿主、IPC、服务、preload 桥、`require` 拦截、启动器和独立应用外壳 |
 | `@whatevertools/web` | 浏览器平台：能力实现、虚拟文件系统、Node / Electron 模块垫片 |
+| `@whatevertools/web-host` | 网页上动态安装插件包：IndexedDB 存储、Service Worker 提供文件、每个插件一个 iframe、安装策略 |
 | `@whatevertools/shim-node` / `shim-electron` | 用能力接口拼出 `fs`、`path`、`os`、`child_process`……以及 `ipcRenderer`、`clipboard`、`nativeImage`…… |
 | `@whatevertools/fs-virtual` | 内存常驻、可持久化到 IndexedDB 的 POSIX 文件系统 |
 | `@whatevertools/bridge` / `bridge-server` | Web 端通过本地守护进程使用真实的文件系统、子进程、剪贴板和 shell（守护进程弹系统对话框问权限） |

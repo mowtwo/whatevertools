@@ -4,3 +4,5 @@ out/
 *.tsbuildinfo
 .DS_Store
 tools/probe-utools/out/
+# 测试夹具里的 node_modules 要提交
+!packages/web/test/fixtures/*/node_modules/

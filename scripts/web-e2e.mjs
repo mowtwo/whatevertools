@@ -61,6 +61,56 @@ for (const e of errs) {
   failed++
   console.log(`✖ [web] 控制台：${e}`)
 }
+
+// ---------- preloadMode: 'cjs'：preload 不经过打包，浏览器里的 CommonJS 加载器直接从 /plugin 执行 ----------
+{
+  const { build } = await import('esbuild')
+  const cjsDir = path.join(root, 'packages', 'web', 'test', 'fixtures', 'cjs')
+  const runtime = (await build({ entryPoints: [path.join(root, 'packages/web/dist/full.js')], bundle: true, format: 'iife', globalName: '__whatevertoolsRuntime', platform: 'browser', target: 'es2020', write: false, logLevel: 'error' })).outputFiles[0].text
+  const files = {}
+  const manifestFiles = {}
+  const walkDir = (d, rel = '') => {
+    for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+      const r = rel ? `${rel}/${e.name}` : e.name
+      if (e.isDirectory()) walkDir(path.join(d, e.name), r)
+      else files[r] = fs.statSync(path.join(d, e.name)).size
+    }
+  }
+  walkDir(cjsDir)
+  for (const m of ['plugin.json', 'whatevertools.json']) manifestFiles[m] = JSON.parse(fs.readFileSync(path.join(cjsDir, m), 'utf8'))
+  const cfg = { manifestFiles, files, preloadMode: 'cjs', compat: [{ type: 'utools' }] }
+  const page = `<!doctype html><meta charset="utf-8"><script src="/__runtime.js"></script><script>
+__whatevertoolsRuntime.boot(Object.assign(${JSON.stringify(cfg)}, { base: location.origin + '/' })).then(function (rt) { window.__booted = 'ok'; return rt.start() }).catch(function (e) { window.__booted = 'fail: ' + (e && e.stack || e) })
+</script>`
+  const srv = http.createServer((req, res) => {
+    const u = decodeURIComponent(new URL(req.url, 'http://x').pathname)
+    if (u === '/__runtime.js') return res.writeHead(200, { 'content-type': 'text/javascript' }).end(runtime)
+    if (u === '/cjs.html') return res.writeHead(200, { 'content-type': 'text/html' }).end(page)
+    const p = path.join(cjsDir, u)
+    if (!p.startsWith(cjsDir) || !fs.existsSync(p) || fs.statSync(p).isDirectory()) return res.writeHead(404).end()
+    res.writeHead(200, { 'content-type': types[path.extname(p)] ?? 'application/octet-stream' }).end(fs.readFileSync(p))
+  })
+  await new Promise((ok) => srv.listen(0, '127.0.0.1', ok))
+  const cjsOut = path.join(out, 'cjs-result')
+  fs.mkdirSync(cjsOut)
+  const expr = "(async () => { for (let i = 0; i < 100 && !window.__booted; i++) await new Promise((r) => setTimeout(r, 100)); return window.__booted + ' ' + JSON.stringify(window.__cjs) })()"
+  await new Promise((ok) => {
+    const child = spawn('node', [path.join(root, 'scripts/cdp.mjs'), `http://127.0.0.1:${srv.address().port}/cjs.html`, cjsOut, expr], { stdio: 'inherit' })
+    const timer = setTimeout(() => child.kill(), 60000)
+    child.on('exit', () => (clearTimeout(timer), ok()))
+  })
+  srv.close()
+  const res = JSON.parse(fs.readFileSync(path.join(cjsOut, 'result.json'), 'utf8'))
+  const want = 'ok ' + JSON.stringify({ helper: 'hello web', circular: 'function/undefined', data: 42, pkg: 'somepkg@1.0.0', other: 'other-cjs', dirname: '/plugin', filename: '/plugin/preload.js', resolved: '/plugin/node_modules/somepkg/lib/main.js', join: 'a/b', fs: 'function', electron: 'object', cached: true })
+  const got = res.results[expr]
+  if (got !== want) failed++
+  console.log(`${got === want ? '✔' : '✖'} [web] cjs 模式 preload（相对文件 / JSON / node_modules / 循环依赖）${got === want ? '' : ` — 期望 ${want}，实际 ${JSON.stringify(got)}`}`)
+  for (const e of res.logs.filter((l) => /^(exception|error)/.test(l))) {
+    failed++
+    console.log(`✖ [web] cjs 控制台：${e}`)
+  }
+}
+
 fs.rmSync(out, { recursive: true, force: true })
 console.log(failed ? `\n${failed} 项失败` : '\n全部通过')
 process.exit(failed ? 1 : 0)

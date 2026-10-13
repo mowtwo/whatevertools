@@ -6,6 +6,8 @@ import { VirtualFs, indexedDbPersist } from '@whatevertools/fs-virtual'
 import { createNodeModules, createProcess, Buffer } from '@whatevertools/shim-node'
 import { createElectronModule } from '@whatevertools/shim-electron'
 import { createWebCaps } from './caps'
+import { createCjsLoader } from './cjs'
+export { createCjsLoader, NODE_BUILTINS, type CjsLoaderIo, type CjsModule, type CjsRequire } from './cjs'
 import { createWebFiles } from '@whatevertools/web-files'
 import { createBridgeCaps } from '@whatevertools/bridge'
 import type { FsCapability } from '@whatevertools/core'
@@ -23,8 +25,13 @@ export interface WebBootConfig {
   base?: string
   /** 插件目录里的文件清单（相对路径 → 字节数），启动时挂进虚拟文件系统 /plugin，小文件预取 */
   files?: Record<string, number>
-  /** preload 相对路径 → 打包后的脚本 URL */
+  /** preload 相对路径 → 打包后的脚本 URL（preloadMode 为 'bundled' 时用） */
   preloads?: Record<string, string>
+  /**
+   * preload 怎么执行：'bundled'（默认）加载 preloads 里构建期打包好的脚本；
+   * 'cjs' 不需要构建，直接用浏览器里的 CommonJS 加载器从 /plugin 执行（require 相对文件、JSON、node_modules 都行，插件文件会全部预取）
+   */
+  preloadMode?: 'bundled' | 'cjs'
   /** 启动时进入的功能 code（默认 URL 参数 feature，再默认第一个有功能指令的功能） */
   startFeature?: string
   /** 现成的 sharp 函数（比如 wasm 版）；优先于 createSharp */
@@ -110,10 +117,12 @@ export async function boot(cfg: WebBootConfig) {
   })
   await vfs.load()
   // 插件自带文件：挂到 /plugin，小文件先下载好，保证同步读取可用
+  // cjs 模式下 require 是同步的：脚本和 JSON 不论大小都要先取好
+  const cjsMode = cfg.preloadMode === 'cjs'
   const prefetch: Promise<unknown>[] = []
   for (const [rel, size] of Object.entries(cfg.files ?? {})) {
     const p = vfs.mountLazy(`/plugin/${rel}`, async () => new Uint8Array(await (await fetch(new URL(rel, base))).arrayBuffer()), size)
-    if (size <= PREFETCH_LIMIT) prefetch.push(vfs.readFile(p).catch(() => {}))
+    if (size <= PREFETCH_LIMIT || (cjsMode && /\.(c?js|json)$/i.test(rel))) prefetch.push(vfs.readFile(p).catch(() => {}))
   }
   const db = new DocDb(new IndexedDbBackend({ name: `whatevertools-db:${manifest.id}` }))
   await Promise.all([db.load(), ...prefetch])
@@ -232,8 +241,20 @@ export async function boot(cfg: WebBootConfig) {
 
   // 加载插件 preload（主窗口用 plugin.json 的 preload，自定义窗口用 webPreferences.preload）
   const preloadName = kind === 'main' ? manifest.preload : q.get('__whatevertoolsPreload') ?? undefined
-  const preloadUrl = preloadName ? cfg.preloads?.[preloadName.replace(/^\.\//, '')] : undefined
-  if (preloadUrl) await loadScript(new URL(preloadUrl, base).href)
+  if (preloadName && cjsMode) {
+    // 绝对路径（path.join(__dirname, 'x.js')）原样用，相对路径相对插件目录
+    const p = preloadName.replace(/^file:\/\//, '')
+    const loader = createCjsLoader({
+      readFileSync: (f) => vfs.readFileSync(f),
+      existsSync: (f) => !!vfs.statSync(f),
+      isFile: (f) => !!vfs.statSync(f)?.isFile,
+      builtin: (name) => g.__whatevertoolsRequire(name),
+    })
+    loader.run(p.startsWith('/') ? p : `/plugin/${p.replace(/^\.\//, '')}`)
+  } else {
+    const preloadUrl = preloadName ? cfg.preloads?.[preloadName.replace(/^\.\//, '')] : undefined
+    if (preloadUrl) await loadScript(new URL(preloadUrl, base).href)
+  }
 
   // 页面关闭：数据落盘，通知插件退出
   addEventListener('pagehide', () => {

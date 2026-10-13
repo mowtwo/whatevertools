@@ -1,0 +1,35 @@
+{
+  "name": "@whatevertools/web-host",
+  "version": "0.1.1",
+  "description": "Install and run uTools-style plugin packages (.upx / .asar / .zip / folders) on any website at runtime: IndexedDB storage, a Service Worker that serves each plugin, one iframe per plugin, install policy",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mowtwo/whatevertools.git",
+    "directory": "packages/web-host"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./sw.js": "./dist/sw.js",
+    "./package.json": "./package.json"
+  },
+  "dependencies": {
+    "@whatevertools/core": "workspace:*",
+    "@whatevertools/compat-utools": "workspace:*",
+    "@whatevertools/upx": "workspace:*"
+  },
+  "devDependencies": {
+    "@whatevertools/web": "workspace:*"
+  }
+}

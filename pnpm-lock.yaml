@@ -228,6 +228,22 @@ importers:
         specifier: workspace:*
         version: link:../core
 
+  packages/web-host:
+    dependencies:
+      '@whatevertools/compat-utools':
+        specifier: workspace:*
+        version: link:../compat-utools
+      '@whatevertools/core':
+        specifier: workspace:*
+        version: link:../core
+      '@whatevertools/upx':
+        specifier: workspace:*
+        version: link:../upx
+    devDependencies:
+      '@whatevertools/web':
+        specifier: workspace:*
+        version: link:../web
+
 packages:
 
   '@electron-internal/extract-zip@1.0.5':

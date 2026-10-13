@@ -5,18 +5,19 @@
   "description": "Portable runtime for launcher-style desktop plugins: run, package and port plugins written against uTools-like APIs",
   "license": "MIT",
   "scripts": {
-    "build": "tsc -b packages/core packages/upx packages/db-file packages/db-indexeddb packages/sync-folder packages/sync-http packages/api packages/compat-utools packages/fs-virtual packages/sharp-canvas packages/shim-node packages/shim-electron packages/bridge packages/bridge-server packages/web-files packages/web packages/electron packages/utools packages/cli packages/vite apps/launcher",
-    "clean": "tsc -b --clean packages/core packages/upx packages/db-file packages/db-indexeddb packages/sync-folder packages/sync-http packages/api packages/compat-utools packages/fs-virtual packages/sharp-canvas packages/shim-node packages/shim-electron packages/bridge packages/bridge-server packages/web-files packages/web packages/electron packages/utools packages/cli packages/vite apps/launcher",
+    "build": "tsc -b packages/core packages/upx packages/db-file packages/db-indexeddb packages/sync-folder packages/sync-http packages/api packages/compat-utools packages/fs-virtual packages/sharp-canvas packages/shim-node packages/shim-electron packages/bridge packages/bridge-server packages/web-files packages/web packages/web-host packages/electron packages/utools packages/cli packages/vite apps/launcher",
+    "clean": "tsc -b --clean packages/core packages/upx packages/db-file packages/db-indexeddb packages/sync-folder packages/sync-http packages/api packages/compat-utools packages/fs-virtual packages/sharp-canvas packages/shim-node packages/shim-electron packages/bridge packages/bridge-server packages/web-files packages/web packages/web-host packages/electron packages/utools packages/cli packages/vite apps/launcher",
     "test": "node --test packages/*/test/*.test.mjs",
     "launcher": "pnpm build && electron apps/launcher",
     "wt": "node packages/cli/dist/index.js",
     "test:e2e": "node scripts/e2e.mjs",
-    "test:all": "pnpm build && pnpm test && pnpm test:e2e && pnpm test:web && pnpm test:pack && pnpm test:vite && pnpm test:sharp",
+    "test:all": "pnpm build && pnpm test && pnpm test:e2e && pnpm test:web && pnpm test:pack && pnpm test:vite && pnpm test:sharp && pnpm test:webhost",
     "test:web": "node scripts/web-e2e.mjs",
     "test:plugins": "node scripts/plugins.mjs",
     "test:pack": "node scripts/pack-e2e.mjs",
     "test:vite": "node packages/vite/test/vite.e2e.mjs",
-    "test:sharp": "node packages/sharp-canvas/test/browser.mjs"
+    "test:sharp": "node packages/sharp-canvas/test/browser.mjs",
+    "test:webhost": "node packages/web-host/test/e2e.mjs"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
