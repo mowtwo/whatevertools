@@ -7,6 +7,7 @@ export default defineConfig({
   title: 'whatevertools',
   description: '启动器插件的通用运行时：一套插件跑在 uTools、Electron 和网页上，几行代码给你的应用和网站加上插件生态。',
   cleanUrls: true,
+  sitemap: { hostname: 'https://whatevertools.mowtwo.com' },
   lastUpdated: true,
   // 在线演示是打包好的静态站点，不经过 VitePress
   srcExclude: ['public/**'],

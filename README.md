@@ -12,7 +12,7 @@
 - **可替换的网页适配器**：Canvas 版 sharp、文件对话框与下载、虚拟文件系统、本地 bridge……每个补齐网页能力的实现都是独立的包。
 - **Vite 插件、Agent skill、llms.txt**：普通 Vite 项目一键产出三端；给 AI Agent 的 skill 随 CLI 分发（`npx whatevertools skill`）。
 
-> 状态：0.2.0。Electron 和 Web 都有完整的端到端测试；Tauri 还没有开始。文档和案例见 [官网](website/)（`website/`，VitePress）。
+> 状态：0.2.0。Electron 和 Web 都有完整的端到端测试；Tauri 还没有开始。官网（文档、案例、在线试用、llms.txt）：https://whatevertools.mowtwo.com（源码在 `website/`）。
 
 ## 安装
 
