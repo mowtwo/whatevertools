@@ -54,6 +54,7 @@ await rt.start()
 
 网站里动态安装插件包（每个插件一个 iframe，Service Worker 从 IndexedDB 提供文件）用 `@whatevertools/web-host`，见它的 README。
 
+<!-- #region hooks -->
 ## hook
 
 所有扩展点共用 `HookRegistry`。插件进程里是访问器级别（get / set / apply / construct），宿主侧是 apply：
@@ -89,3 +90,4 @@ host.hooks.on('plugin:install', { apply: (c) => c.args[0].id.startsWith('trusted
 ## 错误码
 
 `EWTPERM` 权限被拒 · `EWTUNSUPPORTED` 平台不支持 · `EWTINSTALL` 安装被策略或用户拒绝 · `EWTENCRYPTED` upxs 加密包 · `EWTCONFIG` 构建配置错误 · `EWTSIGN` 签名凭据不全 · `EWTBUILDER` 没装 electron-builder · `EWTUSAGE` / `EWTFAIL` 命令行用法错误 / 其他失败（--json 输出里的 code）
+<!-- #endregion hooks -->

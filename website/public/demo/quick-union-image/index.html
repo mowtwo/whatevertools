@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+<script data-whatevertools src="./whatevertools-runtime.js"></script>
+<script data-whatevertools>
+(function () {
+  var base = new URL("./", location.href).href
+  fetch(base + "whatevertools.config.json").then(function (r) { return r.json() }).then(function (cfg) {
+    cfg.base = base
+    return window.__whatevertoolsRuntime.boot(cfg)
+  }).then(function (rt) {
+    var list = document.querySelectorAll('script[type="whatevertools/deferred"]')
+    var chain = Promise.resolve()
+    list.forEach(function (old) {
+      chain = chain.then(function () {
+        return new Promise(function (done) {
+          var s = document.createElement('script')
+          for (var i = 0; i < old.attributes.length; i++) { var a = old.attributes[i]; if (a.name !== 'type' && a.name !== 'data-whatevertools-deferred' && a.name !== 'data-whatevertools-module') s.setAttribute(a.name, a.value) }
+          if (old.hasAttribute('data-whatevertools-module')) s.type = 'module'
+          if (old.src) { s.onload = s.onerror = function () { done() }; s.src = old.src } else { s.textContent = old.textContent; setTimeout(done, 0) }
+          old.parentNode.replaceChild(s, old)
+          if (!old.src) done()
+        })
+      })
+    })
+    // 页面脚本执行完：补发 DOMContentLoaded / load（这些事件早已过去），再让运行时进入插件
+    return chain.then(function () {
+      document.dispatchEvent(new Event('DOMContentLoaded', { bubbles: true }))
+      window.dispatchEvent(new Event('load'))
+      return rt.start()
+    })
+  }).catch(function (e) { console.error('[whatevertools] 启动失败', e); document.body && (document.body.innerHTML = '<pre style="padding:16px;color:#b91c1c">启动失败：' + String(e && e.message || e) + '</pre>') })
+})()
+</script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>快拼图</title>
+    <script data-whatevertools-deferred  data-whatevertools-module crossorigin src="./assets/index-P4flUbnP.js" type="whatevertools/deferred"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-DeuhYTzj.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>

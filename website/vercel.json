@@ -1,0 +1,11 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vitepress",
+  "installCommand": "cd .. && ELECTRON_SKIP_BINARY_DOWNLOAD=1 pnpm install --frozen-lockfile --filter whatevertools-website...",
+  "buildCommand": "pnpm build",
+  "outputDirectory": ".vitepress/dist",
+  "headers": [
+    { "source": "/llms(.*).txt", "headers": [{ "key": "Content-Type", "value": "text/plain; charset=utf-8" }] },
+    { "source": "/skills/(.*)", "headers": [{ "key": "Content-Type", "value": "text/markdown; charset=utf-8" }] }
+  ]
+}

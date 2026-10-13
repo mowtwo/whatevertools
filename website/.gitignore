@@ -1,0 +1,8 @@
+# 构建产物和 prepare.mjs 生成的文件
+.vitepress/cache
+.vitepress/dist
+public/llms.txt
+public/llms-full.txt
+public/skills/
+public/guide/
+public/cases/*.md

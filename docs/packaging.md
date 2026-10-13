@@ -106,4 +106,4 @@ AppImage / deb / tar.gz 不需要代码签名。
 
 ## Vite 项目
 
-普通 Vite 项目可以用 `@whatevertools/vite`，`vite build` 时直接产出各目标，`vite dev` 时在浏览器里模拟插件环境，见 [packages/vite/README.md](../packages/vite/README.md)。
+普通 Vite 项目可以用 `@whatevertools/vite`，`vite build` 时直接产出各目标，`vite dev` 时在浏览器里模拟插件环境，见 [@whatevertools/vite](https://github.com/mowtwo/whatevertools/tree/main/packages/vite)。
