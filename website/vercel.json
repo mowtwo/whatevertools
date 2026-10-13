@@ -5,6 +5,13 @@
   "buildCommand": "pnpm build",
   "outputDirectory": ".vitepress/dist",
   "cleanUrls": true,
+  "redirects": [
+    {
+      "source": "/demo/:app([^/.]+)",
+      "destination": "/demo/:app/",
+      "permanent": false
+    }
+  ],
   "ignoreCommand": "git diff --quiet ${VERCEL_GIT_PREVIOUS_SHA:-HEAD^} HEAD -- . ../docs ../packages/cli/skills ../packages/vite/README.md ../packages/web-host/README.md ../packages/sharp-canvas/README.md ../pnpm-lock.yaml",
   "headers": [
     {

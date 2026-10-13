@@ -79,7 +79,7 @@ const features = [
         </p>
         <div class="cta">
           <a class="btn primary" href="/guide/getting-started">快速开始</a>
-          <a class="btn" href="/demo/quick-union-image/index.html" target="_blank">在线试用快拼图 ↗</a>
+          <a class="btn" href="/demo/quick-union-image/" target="_blank">在线试用快拼图 ↗</a>
           <a class="btn ghost" href="https://github.com/mowtwo/whatevertools" target="_blank">GitHub</a>
         </div>
         <code class="install">npm i -D @whatevertools/cli</code>

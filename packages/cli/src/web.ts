@@ -61,6 +61,11 @@ export interface WebLoaderOptions {
   base: string
   /** 启动配置地址（相对 base） */
   configUrl: string
+  /**
+   * 目录首页（index.html）：托管方开了「干净地址」时页面可能以 /app 而不是 /app/ 打开，
+   * 相对路径会解析到上一级。加一段脚本，地址缺末尾斜杠时补一个 <base>
+   */
+  dirIndex?: boolean
 }
 
 /**
@@ -69,10 +74,13 @@ export interface WebLoaderOptions {
  */
 export function injectWebLoader(html: string, o: WebLoaderOptions): string {
   html = html.replace(/<script\b([^>]*)>/gi, (m, attrs) => (/\bdata-whatevertools\b/.test(attrs) ? m : `<script data-whatevertools-deferred${attrs.replace(/\btype\s*=\s*(['"])module\1/i, ' data-whatevertools-module').replace(/\btype\s*=\s*(['"])text\/javascript\1/i, '')} type="whatevertools/deferred">`))
-  const loader = `<script data-whatevertools src="${o.runtimeSrc}"></script>
+  const fixBase = o.dirIndex
+    ? `<script data-whatevertools>(function () { var p = location.pathname; if (!/\\/$/.test(p) && !/\\.[a-z0-9]+$/i.test(p)) { var b = document.createElement('base'); b.href = p + '/'; document.head.prepend(b) } })()</script>\n`
+    : ''
+  const loader = `${fixBase}<script data-whatevertools src="${o.runtimeSrc}"></script>
 <script data-whatevertools>
 (function () {
-  var base = new URL(${JSON.stringify(o.base)}, location.href).href
+  var base = new URL(${JSON.stringify(o.base)}, document.baseURI).href
   fetch(base + ${JSON.stringify(o.configUrl)}).then(function (r) { return r.json() }).then(function (cfg) {
     cfg.base = base
     return window.__${o.name}Runtime.boot(cfg)

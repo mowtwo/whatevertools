@@ -27,7 +27,7 @@ export default defineConfig({
       { text: '案例', link: '/cases/', activeMatch: '/cases/' },
       { text: 'API 支持', link: '/guide/api-support' },
       { text: '给 AI Agent', link: '/guide/agents' },
-      { text: '在线试用', link: '/demo/quick-union-image/index.html', target: '_blank' },
+      { text: '在线试用', link: '/demo/quick-union-image/', target: '_blank' },
     ],
     sidebar: {
       '/guide/': [

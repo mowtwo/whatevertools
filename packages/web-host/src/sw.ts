@@ -103,7 +103,7 @@
     const loader = `<script data-whatevertools src="${o.runtimeSrc}"></script>
 <script data-whatevertools>
 (function () {
-  var base = new URL(${JSON.stringify(o.base)}, location.href).href
+  var base = new URL(${JSON.stringify(o.base)}, document.baseURI).href
   fetch(base + ${JSON.stringify(o.configUrl)}).then(function (r) { return r.json() }).then(function (cfg) {
     cfg.base = base
     return window.__${o.name}Runtime.boot(cfg)

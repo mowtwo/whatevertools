@@ -1,10 +1,11 @@
 <!doctype html>
 <html lang="zh-CN">
   <head>
+<script data-whatevertools>(function () { var p = location.pathname; if (!/\/$/.test(p) && !/\.[a-z0-9]+$/i.test(p)) { var b = document.createElement('base'); b.href = p + '/'; document.head.prepend(b) } })()</script>
 <script data-whatevertools src="./whatevertools-runtime.js"></script>
 <script data-whatevertools>
 (function () {
-  var base = new URL("./", location.href).href
+  var base = new URL("./", document.baseURI).href
   fetch(base + "whatevertools.config.json").then(function (r) { return r.json() }).then(function (cfg) {
     cfg.base = base
     return window.__whatevertoolsRuntime.boot(cfg)

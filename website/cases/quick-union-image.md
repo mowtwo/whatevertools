@@ -7,10 +7,10 @@ title: 快拼图 · 网页案例
 图片拼接工具：等高 / 等宽拼接、宫格、自由网格、长图与瀑布流，图片编辑、网格预设、批量工作流。原本是 uTools 插件，**同一份代码**打包成网页后直接在浏览器里运行。
 
 <div class="demo-frame">
-  <iframe src="/demo/quick-union-image/index.html" title="快拼图在线试用" loading="lazy"></iframe>
+  <iframe src="/demo/quick-union-image/" title="快拼图在线试用" loading="lazy"></iframe>
 </div>
 
-[全屏打开在线试用 ↗](/demo/quick-union-image/index.html){target="_blank"} · [插件源码](https://github.com/mowtwo/utools-quick-union-image){target="_blank"}
+[全屏打开在线试用 ↗](/demo/quick-union-image/){target="_blank"} · [插件源码](https://github.com/mowtwo/utools-quick-union-image){target="_blank"}
 
 > 在线试用的数据只存在你的浏览器里（IndexedDB）。保存图片会触发浏览器下载。
 

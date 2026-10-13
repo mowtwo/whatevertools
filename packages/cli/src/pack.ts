@@ -357,7 +357,7 @@ async function packWeb(c: WebCtx) {
   for (const f of walk(c.out, (x) => x.endsWith('.html'))) {
     const rel = path.relative(c.out, f)
     const up = path.posix.relative(path.posix.dirname(rel.replace(/\\/g, '/')), '.') || '.'
-    const html = injectWebLoader(fs.readFileSync(f, 'utf8'), { name: c.name, runtimeSrc: `${up}/${runtimeFile}`, base: up + '/', configUrl: `${c.name}.config.json` })
+    const html = injectWebLoader(fs.readFileSync(f, 'utf8'), { name: c.name, runtimeSrc: `${up}/${runtimeFile}`, base: up + '/', configUrl: `${c.name}.config.json`, dirIndex: path.basename(rel) === 'index.html' })
     fs.writeFileSync(f, html)
   }
   fs.writeFileSync(path.join(c.out, 'package.json'), JSON.stringify({ name: c.pkgName, version: c.manifest.version, private: true, description: `${c.product}（web）` }, null, 2))
