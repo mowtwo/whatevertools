@@ -7,7 +7,7 @@
 | `.zip` | 普通压缩包（store / deflate） | 读、安装、打包 |
 | `.upxs` | uTools 加密并签名的安装包 | **不支持**：只能由 uTools 安装，请向作者索取 upx 或源码 |
 
-> 需要独立加载、调试一个已经打成 `.upxs` 的开发者包？另有一个与核心分开的调试工具 [whatevertools Inspector](https://github.com/mowtwo/whatevertools-inspector/releases)（macOS，版本不稳定，仅针对离线开发者包，不公开解密细节，也不绕过任何付费校验）。whatevertools 核心本身仍不支持 `.upxs`。
+> 需要独立加载、调试一个已经打成 `.upxs` 的开发者包？另有一个与核心分开的调试工具 [whatevertools Inspector](https://github.com/mowtwo/whatevertools-inspector-dist/releases)（macOS，版本不稳定，仅针对离线开发者包，不公开解密细节，也不绕过任何付费校验）。whatevertools 核心本身仍不支持 `.upxs`。
 
 ## 兼容安装模式
 

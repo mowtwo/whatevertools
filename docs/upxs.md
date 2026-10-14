@@ -31,4 +31,4 @@ whatevertools 遇到 `.upxs` 会直接报一个明确的错误（`EncryptedPacka
 - 解密相关的细节与密钥**不对外公开**，这里也不做任何说明。
 - **版本不稳定**，会随 uTools 版本变化而失效，仅供调试自查，不作任何对外承诺。
 
-下载（二进制）：<https://github.com/mowtwo/whatevertools-inspector/releases>
+下载（二进制）：<https://github.com/mowtwo/whatevertools-inspector-dist/releases>
