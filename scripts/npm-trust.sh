@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # 给所有 @whatevertools/* 包配置 npm 可信发布者（GitHub Actions 的 release.yml）。
-# 已经配置过的包跳过；包还没发布过也可以先配（配完 2 天内要有一次成功发布）。
+# 已经配置过的包跳过。新包要先在本机 npm publish 发出第一个版本才能配（npm 上不存在的包会报 404，
+# 也不能再手动发 0.0.0-stage 占位版本）；之后的版本都走 CI 发布。
 set -u
 cd "$(dirname "$0")/.."
 for f in packages/*/package.json; do
