@@ -5,8 +5,8 @@
   "description": "Portable runtime for launcher-style desktop plugins: run, package and port plugins written against uTools-like APIs",
   "license": "MIT",
   "scripts": {
-    "build": "tsc -b packages/core packages/upx packages/db-file packages/db-indexeddb packages/sync-folder packages/sync-http packages/api packages/compat-utools packages/fs-virtual packages/sharp-canvas packages/shim-node packages/shim-electron packages/bridge packages/bridge-server packages/web-files packages/web packages/web-host packages/electron packages/utools packages/cli packages/vite apps/launcher",
-    "clean": "tsc -b --clean packages/core packages/upx packages/db-file packages/db-indexeddb packages/sync-folder packages/sync-http packages/api packages/compat-utools packages/fs-virtual packages/sharp-canvas packages/shim-node packages/shim-electron packages/bridge packages/bridge-server packages/web-files packages/web packages/web-host packages/electron packages/utools packages/cli packages/vite apps/launcher",
+    "build": "tsc -b packages/shared packages/core packages/upx packages/db-file packages/db-indexeddb packages/sync-folder packages/sync-http packages/api packages/compat-utools packages/fs-virtual packages/sharp-canvas packages/shim-node packages/shim-electron packages/bridge packages/bridge-server packages/web-files packages/web packages/web-host packages/electron packages/utools packages/cli packages/vite apps/launcher && node packages/shared/build-esm.mjs",
+    "clean": "tsc -b --clean packages/shared packages/core packages/upx packages/db-file packages/db-indexeddb packages/sync-folder packages/sync-http packages/api packages/compat-utools packages/fs-virtual packages/sharp-canvas packages/shim-node packages/shim-electron packages/bridge packages/bridge-server packages/web-files packages/web packages/web-host packages/electron packages/utools packages/cli packages/vite apps/launcher",
     "test": "node --test packages/*/test/*.test.mjs",
     "launcher": "pnpm build && electron apps/launcher",
     "wt": "node packages/cli/dist/index.js",

@@ -84,6 +84,7 @@ pnpm wt pack ../your-plugin/dist --target web --name acme
 | `@whatevertools/db-file` / `db-indexeddb` | 数据库存储适配器 |
 | `@whatevertools/sync-folder` / `sync-http` | 数据同步适配器（共享文件夹；HTTP，附参考服务端） |
 | `@whatevertools/utools` | 给原生 uTools 插件用的类型包：`window.utools` 的 `.d.ts`、plugin.json 的 JSON Schema，零运行时；可选的 `/runtime` 在 uTools 上实现原生 API |
+| `@whatevertools/shared` | 通用能力探测：几种实现链式 fallback，都不可用时抛统一的 `UnsupportedError`（可带升级提示）；零依赖，preload / renderer、uTools / Electron / 网页版通用 |
 | `@whatevertools/cli` | `whatevertools`（`wt`）命令：`build / doctor / init / skill / run / check / pack`，配置文件、安装包与签名、启动器、Agent skill |
 | `@whatevertools/vite` | Vite 插件：写 `whatevertools.json`、`vite build` 时按目标打包、`vite dev` 时在浏览器里模拟插件环境 |
 | `apps/launcher` | 把启动器（`@whatevertools/cli` 里的 `launcher`，`wt run` 用的也是它）打包成独立桌面应用的外壳 |

@@ -133,6 +133,8 @@ importers:
         specifier: workspace:*
         version: link:../core
 
+  packages/shared: {}
+
   packages/sharp-canvas: {}
 
   packages/shim-electron:

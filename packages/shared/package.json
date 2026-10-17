@@ -1,0 +1,30 @@
+{
+  "name": "@whatevertools/shared",
+  "version": "0.2.3",
+  "description": "Runtime-agnostic capability detection with chained fallbacks and a uniform unsupported / upgrade error. Zero dependencies; works in preload and renderer, on uTools, Electron and the web",
+  "license": "MIT",
+  "homepage": "https://whatevertools.mowtwo.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mowtwo/whatevertools.git",
+    "directory": "packages/shared"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  }
+}
